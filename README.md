@@ -20,5 +20,8 @@ Using a language that isn't Python, please include *both* a _Windows (10)_ and _
 ### Tests
 While *not mandatory*, tests always makes [continuous integration](https://www.thoughtworks.com/continuous-integration) a lost easier. Feel free to dm me @timothylock if you want to learn more. :)
 
+### Documentation
+YES YOU MUST HAVE IT. Check (`src/task1/example-module/README.md`)[src/task1/example-module/README.md] for an example template.
+
 HAVE FUN
 ___
