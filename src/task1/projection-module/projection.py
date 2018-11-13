@@ -242,8 +242,8 @@ class ImageProjection:
         """initializes all relevant variables by calculating using the given variables
 
         Args:
-            focal_length (int): the focal length if using a different lens than the Nikon AF NIKKOR 50mm
-            sensor_resolution (int): the sensor resolution if using a different camera than
+            focal_length (int): the focal length in mm if using a different lens than the Nikon AF NIKKOR 50mm
+            sensor_resolution (int): the sensor resolution in pixels if using a different camera than
                 the Teledyne Dalsa Genie Nano XL C5100 Color
             pixel_size (float): the pixel size of the camera in micrometers if using a different camera than
                 the Teledyne Dalsa Genie Nano XL C5100 Color
