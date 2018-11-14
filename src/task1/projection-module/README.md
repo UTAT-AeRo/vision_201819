@@ -17,7 +17,9 @@ First, create an ImageProjection object by calling the class in the code. It req
 projectionCalculator = ImageProjection(focal_length=50, sensor_resolution=5120, pixel_size=4.5) 
 ```
 
-Then, whenever the GPS coordinates of a specific pixel is needed, call the `get_pixel_coords` function with drone intrinsics such as location and angle, and the pixel that you want to find the location of. To find the coordinates of the pixel at `x=2000` and `y=3000` in the image, while the drone has latitude `57.2837 degrees`, longditude `103.2817364 degrees`, altitude `50m`, and yaw, pitch, and roll of `5`, `21`, and `13` degrees respectively (btw I completely made up these numbers they're probably not realistic at all) for example:
+Then, whenever the GPS coordinates of a specific pixel is needed, call the `get_pixel_coords` function with drone intrinsics such as location and angle, and the pixel that you want to find the location of. 
+
+For example, to find the coordinates of the pixel at `x=2000` and `y=3000` in the image, while the drone has latitude `57.2837 degrees`, longditude `103.2817364 degrees`, altitude `50m`, and yaw, pitch, and roll of `5`, `21`, and `13` degrees respectively (btw I completely made up these numbers they're probably not realistic at all):
 
 ```python
 imageCoords = projectionCalculator.get_pixel_coords(pimg=(2000, 3000), yawangle=5, pitchangle=21, rollangle=13, latdrone=57.2837, longdrone=57.2837, altdrone=50)
