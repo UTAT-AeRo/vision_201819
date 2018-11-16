@@ -23,6 +23,20 @@ class Window(QtGui.QMainWindow):
         btn.resize(200, 50)
         btn.move(680, 490)
 
+        # Step 1 Label
+        bl = QtGui.QLabel(self)
+        bl.setText("Step 1 -  select the source image folders")
+        bl.resize(600, 50)
+        bl.move(25, 20)
+        bl.setStyleSheet('color: darkblue')
+
+        # Step 2 Label
+        bl = QtGui.QLabel(self)
+        bl.setText("Step 2 -  Run the modules. Keep in mind to run them in order if applicable")
+        bl.resize(600, 50)
+        bl.move(25, 200)
+        bl.setStyleSheet('color: darkblue')
+
         # Select Directory Curr Directory
         self.dirLabel = QtGui.QLabel(self)
         self.dirLabel.setText(self.dir)
@@ -47,10 +61,11 @@ class Window(QtGui.QMainWindow):
 
     def populateTask1(self):
         # Module 1 Button
-        btn = QtGui.QPushButton("Module 1 - Auto Filter", self)
-        # btn.clicked.connect(self.getDirectory)
-        btn.resize(200, 50)
-        btn.move(25, 250)
+        self.mb1 = QtGui.QPushButton("Module 1 - Auto Filter", self)
+        # self.mb1.clicked.connect(self.getDirectory)
+        self.mb1.resize(200, 50)
+        self.mb1.move(25, 250)
+        self.mb1.setEnabled(False)
 
         # Module 1 Label
         self.m1s = QtGui.QLabel(self)
@@ -60,10 +75,11 @@ class Window(QtGui.QMainWindow):
         self.m1s.setStyleSheet('color: red')
 
         # Module 2 Button
-        btn = QtGui.QPushButton("Module 2 - Human Filter", self)
-        # btn.clicked.connect(self.getDirectory)
-        btn.resize(200, 50)
-        btn.move(25, 300)
+        self.mb2 = QtGui.QPushButton("Module 2 - Human Filter", self)
+        # self.mb1.clicked.connect(self.getDirectory)
+        self.mb2.resize(200, 50)
+        self.mb2.move(25, 300)
+        self.mb2.setEnabled(False)
 
         # Module 2 Label
         self.m2s = QtGui.QLabel(self)
@@ -73,10 +89,11 @@ class Window(QtGui.QMainWindow):
         self.m2s.setStyleSheet('color: red')
 
         # Module 3 Button
-        btn = QtGui.QPushButton("Module 3 - Locate IR Pts", self)
-        # btn.clicked.connect(self.getDirectory)
-        btn.resize(200, 50)
-        btn.move(25, 350)
+        self.mb3 = QtGui.QPushButton("Module 3 - Locate IR Pts", self)
+        # self.mb1.clicked.connect(self.getDirectory)
+        self.mb3.resize(200, 50)
+        self.mb3.move(25, 350)
+        self.mb3.setEnabled(False)
 
         # Module 3 Label
         self.m3s = QtGui.QLabel(self)
@@ -86,10 +103,11 @@ class Window(QtGui.QMainWindow):
         self.m3s.setStyleSheet('color: red')
 
         # Module 4 Button
-        btn = QtGui.QPushButton("Module 4 - Plot On Map", self)
-        # btn.clicked.connect(self.getDirectory)
-        btn.resize(200, 50)
-        btn.move(25, 400)
+        self.mb4 = QtGui.QPushButton("Module 4 - Plot On Map", self)
+        # self.mb1.clicked.connect(self.getDirectory)
+        self.mb4.resize(200, 50)
+        self.mb4.move(25, 400)
+        self.mb4.setEnabled(False)
 
         # Module 4 Label
         self.m4s = QtGui.QLabel(self)
@@ -99,10 +117,11 @@ class Window(QtGui.QMainWindow):
         self.m4s.setStyleSheet('color: red')
 
         # Module AreaPercent Button
-        btn = QtGui.QPushButton("ID Degree of Damage", self)
-        # btn.clicked.connect(self.getDirectory)
-        btn.resize(200, 50)
-        btn.move(450, 250)
+        self.mb5 = QtGui.QPushButton("ID Degree of Damage", self)
+        # self.mb1.clicked.connect(self.getDirectory)
+        self.mb5.resize(200, 50)
+        self.mb5.move(450, 250)
+        self.mb5.setEnabled(False)
 
         # Module AreaPercent Label
         self.mscs = QtGui.QLabel(self)
@@ -112,10 +131,11 @@ class Window(QtGui.QMainWindow):
         self.mscs.setStyleSheet('color: red')
 
         # Module 1 Button
-        btn = QtGui.QPushButton("ID Signif Changes", self)
-        # btn.clicked.connect(self.getDirectory)
-        btn.resize(200, 50)
-        btn.move(450, 400)
+        self.mb6 = QtGui.QPushButton("ID Signif Changes", self)
+        # self.mb1.clicked.connect(self.getDirectory)
+        self.mb6.resize(200, 50)
+        self.mb6.move(450, 400)
+        self.mb6.setEnabled(False)
 
         # Module 1 Label
         self.mscs = QtGui.QLabel(self)
@@ -132,7 +152,10 @@ class Window(QtGui.QMainWindow):
             os.getcwd(),
             QtGui.QFileDialog.ShowDirsOnly)
 
+        # Update GUI and unlock certain buttons
         self.dirLabel.setText(self.dir)
+        self.mb1.setEnabled(True)  # Auto Filter Button unlock
+        self.mb6.setEnabled(True)  # ID Sig Changes Button unlock
 
 
 
