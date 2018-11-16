@@ -1,0 +1,1 @@
+brew install cartr/qt4/pyqt
