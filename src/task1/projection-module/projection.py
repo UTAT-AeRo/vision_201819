@@ -214,6 +214,7 @@ class ImageProjection:
             return pymap.ned2geodetic(point_ned[0], point_ned[1], point_ned[2], latdrone, longdrone, altdrone)
 
         else:
+            # TODO Get this working
             # First get the angle and the norm of the pixel vector to use for the bearing and distance
             bearing = np.angle(point_ned)
             distance = np.linalg.norm(point_ned)
@@ -265,9 +266,8 @@ class ImageProjection:
             the sensor size of the camera in mm
         """
 
-        # Times 1000 to convert from micrometers to mm
-        # FIXED -- FC: don't you need to convert micrometers to mm and shouldn't that be *10^-3?
-        return sensor_resolution * pixel_size * 1000
+        # Divide by 1000 to convert from micrometers to mm
+        return sensor_resolution * (pixel_size / 1000)
 
     def __init__(self, focal_length=50, sensor_resolution=5120, pixel_size=4.5):
         """initializes all relevant variables by calculating using the given variables
