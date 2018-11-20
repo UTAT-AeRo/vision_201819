@@ -4,6 +4,8 @@ from imutils import contours
 import os
 import argparse
 import json
+from skimage import measure
+import numpy as np
 
 # Show image (for debugging)
 def show_img(image):
@@ -11,20 +13,37 @@ def show_img(image):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+# Detect if bright spots are large enough
+def detect_blobs(img):
+    labels = measure.label(img, connectivity=1.5)
+    mask = np.zeros(img.shape, dtype="uint8")
+    # Filter blobs
+    for label in np.unique(labels):
+        if label != 0:
+            lm = np.zeros(img.shape, dtype="uint8")
+            lm[labels == label] = 255
+            numPixels = cv2.countNonZero(lm)
+            if numPixels > 10:
+                mask = cv2.add(mask, lm)
+    return mask
+
 # Detect whether there exists a spot bright enough
 def process_img(file_name):
     image = cv2.imread(file_name)
+    # Blur and smooth
     smoothed_image = cv2.bilateralFilter(image, 20, 50, 200)
     gray = cv2.cvtColor(smoothed_image, cv2.COLOR_BGR2GRAY)
-    thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)[1]
-    thresh = cv2.dilate(thresh, None, iterations=4)
-    thresh = cv2.erode(thresh, None, iterations=2)
-    cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    preprocessed_img = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)[1]
+    # Smooth possible blobs
+    preprocessed_img = cv2.dilate(preprocessed_img, None, iterations=4)
+    preprocessed_img = cv2.erode(preprocessed_img, None, iterations=2)
+    filtered_img = detect_blobs(preprocessed_img)
+    # Draw circle
+    cnts = cv2.findContours(filtered_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if imutils.is_cv2() else cnts[1]
     if len(cnts) > 0:
         cnts = contours.sort_contours(cnts)[0]
         for (i, c) in enumerate(cnts):
-            (x, y, w, h) = cv2.boundingRect(c)
             ((cX, cY), radius) = cv2.minEnclosingCircle(c)
             cv2.circle(image, (int(cX), int(cY)), int(radius),
                        (0, 0, 255), 2)
