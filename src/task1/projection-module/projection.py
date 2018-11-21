@@ -47,13 +47,13 @@ class ImageProjection:
         of an arbitrary pixel in the image.
 
         Attributes:
-            pimg (tuple of 2 floats): the coordinates of the pixel in the camera's reference frame
+            pimg (tuple of 2 floats): the coordinates of the pixel from the top left in the camera's reference frame.
             yawangle (float): The yaw angle in degrees, for axis 3
             pitchangle (float): The pitch angle in degrees, for axis 2
             rollangle (float): The roll angle in degrees, for axis 1
             latdrone (float): the latitude of the drone in degrees
             longdrone (float): the longditude of the drone in degrees
-            altdrone (float): the absolute altitude of the drone in meters
+            altdrone (float): the altitude of the drone above ground level in meters
 
         Returns:
             3-tuple of GPS coords in the form (lat, long, alt)
@@ -172,7 +172,7 @@ class ImageProjection:
 
     def _project_to_ground(self, pearth, altdrone):
         """Takes position of pixel within the 'camera' in earths frame of
-        refrence and projects in to ground as described in slide TODO.
+        refrence and projects in to ground as described in slide 26.
 
         Attributes
             pearth (numpy array object): the vector to the pixel in the earth reference frame
@@ -216,12 +216,13 @@ class ImageProjection:
         else:
             # TODO Get this working
             # First get the angle and the norm of the pixel vector to use for the bearing and distance
-            bearing = np.angle(point_ned)
-            distance = np.linalg.norm(point_ned)
+            bearing = np.angle(point_ned).tolist()[2]
+            distance = np.linalg.norm(point_ned).tolist()
 
             # Calculate the angular distance using the earth's radius as a constant
             EARTH_RADIUS = 6378137
             angular_distance = distance / EARTH_RADIUS
+            print(angular_distance)
 
             # Use the formula from https://www.movable-type.co.uk/scripts/latlong.html to calculate the latitude
             # and longditude of the new point. I hope I haven't mixed up lat and long which is very possible
@@ -275,7 +276,7 @@ class ImageProjection:
         Args:
             focal_length (int): the focal length in mm if using a different lens than the Nikon AF NIKKOR 50mm
             sensor_resolution (int): the sensor resolution in pixels if using a different camera than
-                the Teledyne Dalsa Genie Nano XL C5100 Color
+                the Teledyne Dalsa Genie Nano XL C5100 Color. Also assumes the sensor is square.
             pixel_size (float): the pixel size of the camera in micrometers if using a different camera than
                 the Teledyne Dalsa Genie Nano XL C5100 Color
         """
