@@ -61,7 +61,8 @@ def main():
         if remove == True:
             shutil.rmtree(new_dir) #remove the existing directory 
         os.mkdir(new_dir)
-    except OSError:
+    except OSError as err:
+        print("OS error: {0}".format(err))
         print("ERROR: OS Error")
         return False #end program
     else:  
