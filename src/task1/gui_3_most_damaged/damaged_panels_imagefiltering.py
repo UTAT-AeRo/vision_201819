@@ -82,5 +82,3 @@ def main():
     
 if main() == False:
     sys.exit(-1) #so the caller of your program knows that your program didnt exit properly
-else:
-    sys.exit(0)
