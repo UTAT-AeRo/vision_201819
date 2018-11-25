@@ -16,6 +16,7 @@ class Rectangle:
         self.bottom_right = bottom_right
 
     # Get
+    ###### NOTE THIS ASSUMES NO DISTORTIONS ######
     def get_width_pixels(self):
         """
         :return: width in pixels
