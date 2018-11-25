@@ -20,7 +20,7 @@ class Rectangle:
         """
         :return: width in pixels
         """
-        return  abs(self.top_left[0] - self.bottom_right[0])
+        return abs(self.top_left[0] - self.bottom_right[0])
 
     def get_height_pixels(self):
         return abs(self.top_left[1] - self.bottom_right[1])
@@ -37,3 +37,20 @@ class Rectangle:
         rect[2] = self.bottom_right
         rect[3] = np.array([self.top_left[0], self.bottom_right[1]])
         return rect
+
+    def get_width_mm(self, pixel_size=4.5):
+        """
+        :param pixel_size: in micrometer
+        :return: return the width in mm
+        """
+        # micro to mm is 10^-3
+        return abs(self.top_left[0] - self.bottom_right[0]) * pixel_size * 10**(-3)
+
+    def get_height_mm(self, pixel_size=4.5):
+        """
+
+        :param pixel_size: in micrometer
+        :return: return the width in mm
+        """
+        # micro to mm is 10^-3
+        return abs(self.top_left[1] - self.bottom_right[1]) * pixel_size * 10**(-3)
