@@ -48,17 +48,12 @@ def four_point_transform(image, rect):
     # return the warped image
     return warped
 
-def tuple2array():
-    return NotImplemented
-
-
 if __name__ == '__main__':
-    # gui.gui()
     fourpoints = np.array([[13., 127.], [492., 14.], [631., 293.], [118., 455.]], np.float32)
-    image = cv2.imread("Sample_Images/book.png")
-    plt.imshow(image)
-    plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
-    plt.show()
-    a = four_point_transform(image, fourpoints)
-    cv2.imwrite("result.png", a)
+    # image = cv2.imread("Sample_Images/book.png")
+    # plt.imshow(image)
+    # plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
+    # plt.show()
+    # a = four_point_transform(image, fourpoints)
+    # cv2.imwrite("result.png", a)
 

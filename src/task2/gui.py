@@ -1,7 +1,7 @@
 from Tkinter import *
 from tkFileDialog import askopenfilename
 from PIL import Image, ImageTk
-import cv2
+import Mouse_clicks
 
 # https://stackoverflow.com/questions/5501192/how-to-display-picture-and-get-mouse-click-coordinate-on-it
 
@@ -9,12 +9,6 @@ import cv2
 # TODO Overlay an X for the selected regions
 # TODO Resize the window automatically
 # TODO Use CV instead of PIL since it's more efficient.
-
-
-# function to be called when mouse is clicked
-def printcoords(event):
-    # outputting x and y coords to console
-    print (event.x, event.y)
 
 def gui():
 
@@ -62,8 +56,15 @@ def track_to_list(lst, root):
         print event.x, event.y
         print lst
         if (len(lst) >=4):
+            some_func(lst)
             root.destroy()
     return left_mouse_click
 
+def some_func(stuff):
+    print stuff
+    Mouse_clicks.get_mouse_clicks(stuff)
+
+if __name__ == '__main__':
+    gui()
 
 # TODO create rectangle for the selected image points
