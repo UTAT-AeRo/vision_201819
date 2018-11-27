@@ -31,7 +31,7 @@ class ImageProjection:
             Nikon AF NIKKOR 50mm lens
         sensor_resolution (int): the sensor resolution of the camera used in pixels. Set to 5120 by default for the
             Teledyne Dalsa Genie Nano XL C5100 Color
-        pixel_size (int): the pixel size of the camera used in μm. Set to 4.5 by default for the
+        pixel_size (int): the pixel size of the camera used in micrometers. Set to 4.5 by default for the
             Teledyne Dalsa Genie Nano XL C5100 Color
 
         CALCULATED ATTRIBUTES
@@ -73,13 +73,6 @@ class ImageProjection:
         coords = self._ned_to_geodetic(point_ned, latdrone, longdrone, altdrone)
         return coords
 
-    # FC: just fyi you can also define the reference frames in terms of coordinate systems. e.g. World Coordinate system
-    #  and Camera coordinate system as well. This is just a slight differences in terminology whether you come from an
-    # Engineering Dynamics background (reference frames) or a Computer Vision background where everything is treated as
-    # coordinate systems. That is, the 3D coordinate system is typically refered to as the World coordinate system.
-    # The 2d image coordinates is the camera coordinates or image coordinate. You will often hear of terminologies like
-    # camera to world matrices in computer vision.
-
     def _imgref_to_droneref(self, pimg):
         """Converts a pixel from the camera's reference frame to the drone's reference frame
 
@@ -111,16 +104,12 @@ class ImageProjection:
 
         # Finally, calculate the 'vertical distance' using the focal length and pixel size
         # NOTE: I am converting everything to meters first to keep the units consistent
-        # FIXED -- FC: keep units consistent, convert pixel size to meters.
         fz = ((self.focal_length * 0.001) / (self.pixel_size * 0.000001))
 
         pdrone = np.append(pdrone, fz)
 
         return pdrone
 
-    # FC: just fyi if the camera is in a fixed reference frame to the drone (i.e. the camera and the drone can be
-    # treated as one rigid body) then rotation matrix would be the rotation elements of what is known as the camera
-    # extrinsics in computer vision.
     def _droneref_to_earthref(self, pdrone, yaw, pitch, roll):
         """Converts a vector representing a pixel in the drone reference frame to the earth reference frame
 
@@ -146,7 +135,6 @@ class ImageProjection:
 
         # Attempt to copy the rotation matrix to convert from drone reference to earth reference on slide 25
         # This is actualy the earth to drone rotation matrix we need to transpose it to get what we want.
-        # FIXED -- FC: nit: avoid smurf naming please https://blog.codinghorror.com/new-programming-jargon/
         earth_drone_rotation = np.array([[m.cos(pitch) * m.cos(yaw),
                                          m.cos(pitch) * m.sin(yaw),
                                          -1 * m.sin(pitch)
@@ -190,7 +178,7 @@ class ImageProjection:
 
         return point_pos_ned
 
-    def _ned_to_geodetic(self, point_ned, latdrone, longdrone, altdrone, usepymap=True):
+    def _ned_to_geodetic(self, point_ned, latdrone, longdrone, altdrone):
         """Find the GPS coordinates of the point on the ground in (NED)
 
         Given the vector to the point on in the ground in earth reference frame (NED), this finds and returns the
@@ -210,30 +198,7 @@ class ImageProjection:
             if the function works correctly since the point is projected onto the ground
         """
 
-        if usepymap:
-            return pymap.ned2geodetic(point_ned[0], point_ned[1], point_ned[2], latdrone, longdrone, altdrone)
-
-        else:
-            # TODO Get this working
-            # First get the angle and the norm of the pixel vector to use for the bearing and distance
-            bearing = np.angle(point_ned).tolist()[2]
-            distance = np.linalg.norm(point_ned).tolist()
-
-            # Calculate the angular distance using the earth's radius as a constant
-            EARTH_RADIUS = 6378137
-            angular_distance = distance / EARTH_RADIUS
-            print(angular_distance)
-
-            # Use the formula from https://www.movable-type.co.uk/scripts/latlong.html to calculate the latitude
-            # and longditude of the new point. I hope I haven't mixed up lat and long which is very possible
-
-            pointlat = m.asin(m.sin(point_ned[0]) * m.cos(angular_distance) +
-                              m.cos(point_ned[0] * m.sin(angular_distance) * m.cos(bearing)))
-
-            pointlong = point_ned[1] + m.atan2(m.sin(bearing) * m.sin(angular_distance) * m.cos(point_ned[0]),
-                                               m.cos(angular_distance) - m.sin(point_ned[0]) * m.sin(pointlat))
-
-            return pointlat, pointlong, altdrone + point_ned[2]
+        return pymap.ned2geodetic(point_ned[0], point_ned[1], point_ned[2], latdrone, longdrone, altdrone)
 
     def _calculate_fov(self, focal_length, sensor_size):
         """Calculates the fov of a camera given its focal length and sensor size
@@ -250,7 +215,6 @@ class ImageProjection:
         """
 
         # Calulates with the formula and converts the result to degrees
-        # FIXED -- FC: FOV should be multiplied by 2, as you wrote in the desciption above
         return m.degrees(2 * m.atan((0.5 * sensor_size) / focal_length))
 
     def _calculate_sensor_size(self, sensor_resolution, pixel_size):
