@@ -31,7 +31,7 @@ class ImageProjection:
             Nikon AF NIKKOR 50mm lens
         sensor_resolution (int): the sensor resolution of the camera used in pixels. Set to 5120 by default for the
             Teledyne Dalsa Genie Nano XL C5100 Color
-        pixel_size (int): the pixel size of the camera used in μm. Set to 4.5 by default for the
+        pixel_size (int): the pixel size of the camera used in micrometers. Set to 4.5 by default for the
             Teledyne Dalsa Genie Nano XL C5100 Color
 
         CALCULATED ATTRIBUTES
@@ -47,13 +47,13 @@ class ImageProjection:
         of an arbitrary pixel in the image.
 
         Attributes:
-            pimg (tuple of 2 floats): the coordinates of the pixel in the camera's reference frame
+            pimg (tuple of 2 floats): the coordinates of the pixel from the top left in the camera's reference frame.
             yawangle (float): The yaw angle in degrees, for axis 3
             pitchangle (float): The pitch angle in degrees, for axis 2
             rollangle (float): The roll angle in degrees, for axis 1
             latdrone (float): the latitude of the drone in degrees
             longdrone (float): the longditude of the drone in degrees
-            altdrone (float): the altitude of the drone in meters
+            altdrone (float): the altitude of the drone above ground level in meters
 
         Returns:
             3-tuple of GPS coords in the form (lat, long, alt)
@@ -66,12 +66,13 @@ class ImageProjection:
         pearth = self._droneref_to_earthref(pdrone, yawangle, pitchangle,
                                             rollangle)
 
-        # Get coords of pixel from vector in earth reference frame
+        # take the position of the pixel in the camera and project it to the ground.
+        point_ned = self._project_to_ground(pearth, altdrone)
 
-        coords = self._find_target_coord(pearth, latdrone, longdrone, altdrone)
+        # Get coords of pixel from vector in earth reference frame
+        coords = self._ned_to_geodetic(point_ned, latdrone, longdrone, altdrone)
         return coords
 
-    # FC: just fyi you can also define the reference frames in terms of coordinate systems. e.g. World Coordinate system and Camera coordinate system as well. This is just a slight differences in terminology whether you come from an Engineering Dynamics background (reference frames) or a Computer Vision background where everything is treated as coordinate systems. That is, the 3D coordinate system is typically refered to as the World coordinate system. The 2d image coordinates is the camera coordinates or image coordinate. You will often hear of terminologies like camera to world matrices in computer vision.
     def _imgref_to_droneref(self, pimg):
         """Converts a pixel from the camera's reference frame to the drone's reference frame
 
@@ -103,15 +104,14 @@ class ImageProjection:
 
         # Finally, calculate the 'vertical distance' using the focal length and pixel size
         # NOTE: I am converting everything to meters first to keep the units consistent
-        # FIXED -- FC: keep units consistent, convert pixel size to meters.
         fz = ((self.focal_length * 0.001) / (self.pixel_size * 0.000001))
-        pdrone.append(fz)
+
+        pdrone = np.append(pdrone, fz)
 
         return pdrone
 
-    # FC: just fyi if the camera is in a fixed reference frame to the drone (i.e. the camera and the drone can be treated as one rigid body) then rotation matrix would be the rotation elements of what is known as the camera extrinsics in computer vision.
     def _droneref_to_earthref(self, pdrone, yaw, pitch, roll):
-        """Converts a a vector representing a pixel in the drone reference frame to the earth reference frame
+        """Converts a vector representing a pixel in the drone reference frame to the earth reference frame
 
         Given pdrone, a numpy 3D array representing a pixel in the drone reference frame,
         this functiin will use the rotation matrix derived from the Euler angles to find and
@@ -134,8 +134,8 @@ class ImageProjection:
         roll = m.radians(roll)
 
         # Attempt to copy the rotation matrix to convert from drone reference to earth reference on slide 25
-        # FIXED -- FC: nit: avoid smurf naming please https://blog.codinghorror.com/new-programming-jargon/
-        drone_earthrotation = np.array([[m.cos(pitch) * m.cos(yaw),
+        # This is actualy the earth to drone rotation matrix we need to transpose it to get what we want.
+        earth_drone_rotation = np.array([[m.cos(pitch) * m.cos(yaw),
                                          m.cos(pitch) * m.sin(yaw),
                                          -1 * m.sin(pitch)
                                          ],
@@ -149,23 +149,45 @@ class ImageProjection:
                                          ]]
                                        )
 
+        drone_earth_rotation = np.transpose(earth_drone_rotation)
+
         # Uncomment for error checking
         # if np.linalg.det(drone_earthrotation) != 1:
         #     print("ERROR - THE ROTATION MATRIX IS INCORRECT - DETERMINANT SHOULD BE 1 BUT IT IS" +
         # np.linalg.det(drone_earthrotation))
 
-        return drone_earthrotation.dot(pdrone)
+        return drone_earth_rotation.dot(pdrone)
 
-    def _find_target_coord(self, pearth, latdrone, longdrone, altdrone, usepymap=True):
-        """Find the GPS coordinates of the pixel
+    def _project_to_ground(self, pearth, altdrone):
+        """Takes position of pixel within the 'camera' in earths frame of
+        refrence and projects in to ground as described in slide 26.
 
-        Given the vector to the pixel in the earth reference frame (NED), this finds and returns the
+        Attributes
+            pearth (numpy array object): the vector to the pixel in the earth reference frame
+            altdrone (float): the altitude of the drone in meters
+
+        Returns
+            A numpy array containing the position of the point on the ground in
+            NED cordenats relative to the drone.
+
+        """
+
+        # Find scaled vector to project to ground
+        scaling_factor = altdrone / pearth[2]
+        point_pos_ned = scaling_factor * pearth
+
+        return point_pos_ned
+
+    def _ned_to_geodetic(self, point_ned, latdrone, longdrone, altdrone):
+        """Find the GPS coordinates of the point on the ground in (NED)
+
+        Given the vector to the point on in the ground in earth reference frame (NED), this finds and returns the
         GPS coordinates (geodetic coordinate system). I added the ability to either use the built in method
         from pymap3d or to use the formula and the method given on slide 28 and the formula from the GPS
         website.
 
         Attributes:
-            pearth (numpy array object): the vector to the pixel in the earth reference frame
+            point_ned (numpy array object): the vector to the point in the earth reference frame
             latdrone (float): the latitude of the drone in degrees
             longdrone (float): the longditude of the drone in degrees
             altdrone (float): the altitude of the drone in meters
@@ -175,32 +197,8 @@ class ImageProjection:
             3-tuple of GPS coords in the form (lat, long, alt). NOTE: alt should always be 0
             if the function works correctly since the point is projected onto the ground
         """
-        # Find scaled vector to project to ground
-        scaling_factor = altdrone / pearth[2]
-        pearthscaled = scaling_factor * pearth
 
-        if usepymap:
-            return pymap.ned2geodetic(pearthscaled[0], pearthscaled[1], pearthscaled[2], latdrone, longdrone, altdrone)
-
-        else:
-            # First get the angle and the norm of the pixel vector to use for the bearing and distance
-            bearing = np.angle(pearthscaled)
-            distance = np.linalg.norm(pearthscaled)
-
-            # Calculate the angular distance using the earth's radius as a constant
-            EARTH_RADIUS = 6378137
-            angular_distance = distance / EARTH_RADIUS
-
-            # Use the formula from https://www.movable-type.co.uk/scripts/latlong.html to calculate the latitude
-            # and longditude of the new point. I hope I haven't mixed up lat and long which is very possible
-
-            pointlat = m.asin(m.sin(pearthscaled[0]) * m.cos(angular_distance) +
-                              m.cos(pearthscaled[0] * m.sin(angular_distance) * m.cos(bearing)))
-
-            pointlong = pearthscaled[1] + m.atan2(m.sin(bearing) * m.sin(angular_distance) * m.cos(pearthscaled[0]),
-                                                  m.cos(angular_distance) - m.sin(pearthscaled[0]) * m.sin(pointlat))
-
-            return (pointlat, pointlong, 0)
+        return pymap.ned2geodetic(point_ned[0], point_ned[1], point_ned[2], latdrone, longdrone, altdrone)
 
     def _calculate_fov(self, focal_length, sensor_size):
         """Calculates the fov of a camera given its focal length and sensor size
@@ -217,7 +215,6 @@ class ImageProjection:
         """
 
         # Calulates with the formula and converts the result to degrees
-        # FIXED -- FC: FOV should be multiplied by 2, as you wrote in the desciption above
         return m.degrees(2 * m.atan((0.5 * sensor_size) / focal_length))
 
     def _calculate_sensor_size(self, sensor_resolution, pixel_size):
@@ -234,9 +231,8 @@ class ImageProjection:
             the sensor size of the camera in mm
         """
 
-        # Times 1000 to convert from micrometers to mm
-        # FIXED -- FC: don't you need to convert micrometers to mm and shouldn't that be *10^-3?
-        return sensor_resolution * pixel_size * 1000
+        # Divide by 1000 to convert from micrometers to mm
+        return sensor_resolution * (pixel_size / 1000)
 
     def __init__(self, focal_length=50, sensor_resolution=5120, pixel_size=4.5):
         """initializes all relevant variables by calculating using the given variables
@@ -244,7 +240,7 @@ class ImageProjection:
         Args:
             focal_length (int): the focal length in mm if using a different lens than the Nikon AF NIKKOR 50mm
             sensor_resolution (int): the sensor resolution in pixels if using a different camera than
-                the Teledyne Dalsa Genie Nano XL C5100 Color
+                the Teledyne Dalsa Genie Nano XL C5100 Color. Also assumes the sensor is square.
             pixel_size (float): the pixel size of the camera in micrometers if using a different camera than
                 the Teledyne Dalsa Genie Nano XL C5100 Color
         """
