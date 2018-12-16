@@ -35,11 +35,11 @@ class Viewer:
         self.lbl.pack(side='top')
 
         # the button frame
-        button_fr = Frame(self.top)
-        button_fr.pack(side='top', expand=1, fill='x')
-        back_button = Button(button_fr, text="back", command=lambda: self.next_frame(self.index-1))
+        self.button_fr = Frame(self.top)
+        self.button_fr.pack(side='top', expand=1, fill='x')
+        back_button = Button(self.button_fr, text="back", command=lambda: self.next_frame(self.index-1))
         back_button.grid(row=0, column=0, sticky="w", padx=4, pady=4)
-        next_button = Button(button_fr, text="next", command=lambda: self.next_frame(self.index+1))
+        next_button = Button(self.button_fr, text="next", command=lambda: self.next_frame(self.index+1))
         next_button.grid(row=0, column=6, sticky="e", padx=4, pady=4)
 
     # Open an image
