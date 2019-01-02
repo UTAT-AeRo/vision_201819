@@ -1,7 +1,9 @@
-from Tkinter import *
-from tkFileDialog import askopenfilename
+from tkinter import *
 from PIL import Image, ImageTk
-import Mouse_clicks
+import cv2
+from typing import Tuple
+import nPTransform
+import numpy as np
 
 # https://stackoverflow.com/questions/5501192/how-to-display-picture-and-get-mouse-click-coordinate-on-it
 
@@ -10,7 +12,15 @@ import Mouse_clicks
 # TODO Resize the window automatically
 # TODO Use CV instead of PIL since it's more efficient.
 
-def gui():
+
+class Need4PointsError(Exception):
+    pass
+
+
+def flatten_image(path: str) -> np.ndarray:
+    """takes path to the image and returns flattend image"""
+
+    opencv_img = cv2.imread(path)
 
     root = Tk()
 
@@ -24,9 +34,7 @@ def gui():
     frame.pack(fill=BOTH,expand=1)
 
     #adding the image
-    File = askopenfilename(parent=root, initialdir="C:/",title='Choose an image.')
-    # img = cv2.imread('Sample_Images/book.png')
-    im = Image.open(File)
+    im = Image.open(path)
     img = ImageTk.PhotoImage(im)
     canvas.create_image(0,0,image=img,anchor="nw")
     canvas.config(scrollregion=canvas.bbox(ALL))
@@ -37,11 +45,23 @@ def gui():
     #mouseclick event
     # create list of clicks
     clicks = []
-    # create function to track clicks into 'clicks'
+    # create function to track clicks
     tracking_function = track_to_list(clicks, root)
+
     # use clicks tracker generated as click handler
-    canvas.bind('<Button-1>', lambda event: tracking_function(event))
+    canvas.bind('<Button-1>', tracking_function)
+
     root.mainloop()
+
+    if len(clicks) != 4:
+        raise Need4PointsError
+
+    rect = np.asarray([np.asarray(np.float32(p)) for p in clicks])
+
+    print(type(nPTransform.four_point_transform(opencv_img, rect)))
+
+    return nPTransform.four_point_transform(opencv_img, rect)
+
 
 # https://stackoverflow.com/questions/28615900/how-do-i-add-a-mouse-click-position-to-a-list-in-tkinter
 def track_to_list(lst, root):
@@ -53,18 +73,14 @@ def track_to_list(lst, root):
                            fill='red', width=1)
         # add tuple (x, y) to existing list
         lst.append((event.x, event.y,))
-        print event.x, event.y
-        print lst
+        #print (event.x, event.y)
+        #print (lst)
         if (len(lst) >=4):
-            some_func(lst)
             root.destroy()
     return left_mouse_click
 
-def some_func(stuff):
-    print stuff
-    Mouse_clicks.get_mouse_clicks(stuff)
-
 if __name__ == '__main__':
-    gui()
+    flat_img = flatten_image('Sample_Images/solar.jpg')
+    cv2.imwrite("result.png", flat_img)
 
-# TODO create rectangle for the selected image points
+
