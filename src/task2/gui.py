@@ -1,15 +1,21 @@
 from tkinter import *
 from PIL import Image, ImageTk
 import cv2
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 import nPTransform
 import numpy as np
 from enum import Enum
 from shapely.geometry import Polygon
 
-
 # https://stackoverflow.com/questions/5501192/how-to-display-picture-and-get-mouse-click-coordinate-on-it
 
+
+LINE_COLOR = (0, 0, 255)
+LINE_WIDTH = 3
+TEXT_SIZE = 1
+TEXT_COLOR = (255, 0, 0)
+TEXT_FONT = cv2.FONT_HERSHEY_SIMPLEX
+TEXT_THICKNESS = 3
 
 # TODO fix pTransform aspect ratio issue
 # TODO Allow multiple images
@@ -28,31 +34,40 @@ class State(Enum):
 
 class Image_Processor:
     """This class represents an the image processing application
+        *** This class assumes the solar panels are rectangles ***
 
     ==== Atributes ===
     master: the root of the gui
     canvas: the canvas containing the image being edited
     state: the current state of the Image_Processor
     clicks: the clicks that have been made on the canvas
-    cv_image: The final image to be saved in the form of a np.array
+    final_cv_img: The final image to be saved in the form of a np.array
     tk_image: the image currently being displayed on the screen.
     state_label: Displays the current state
     im_on_canvas: id of the image on the canvas.
-    width: the length of the sortest side of the solar panel in milimeters
+    dim: This is a tuple containing first the length of the smaller
+        edge of the solar panel (width in mm) and then the larger edge
+        (height in mm).
     """
     master: Tk
     canvas: Canvas
     state: State
-    clicks: List[Tuple[int,int]]
-    cv_image: np.ndarray
+    clicks: List[Tuple[int, int]]
+    final_cv_img: np.ndarray
     tk_image: PhotoImage
-    width: float
+    dim: Optional[Tuple[float, float]]
 
-    def __init__(self, master, path:str, width:float=None):
-        """Create a new image processor"""
+    def __init__(self, master: Tk, path: str, dim: Optional[Tuple[float, float]]):
+        """
+        :param master: The root for this Tk window
+        :param path: The path for the file to be opened TODO Temp
+        :param dim: The is a tuple containing first the length of the smaller
+        edge of the solar panel (width) and then the larger edge (height).
+        """
 
-        # TODO should be moved to a perpanel basis
-        self.width = width
+        # TODO should be moved to a per-panel basis
+
+        self.dim = dim
 
         self.master = master
 
@@ -97,8 +112,8 @@ class Image_Processor:
 
         photo_frame.pack(fill=BOTH, expand=1)
 
-        self.cv_image = cv2.imread(path)
-        self.tk_image = self.cv2tk_image(self.cv_image)
+        self.final_cv_img = cv2.imread(path)
+        self.tk_image = self.cv2tk_image(self.final_cv_img)
 
         self.im_on_canvas = canvas.create_image(0, 0, image=self.tk_image,
                                                 anchor="nw",
@@ -119,7 +134,7 @@ class Image_Processor:
         im = Image.fromarray(cv_img)
         return ImageTk.PhotoImage(image=im)
 
-    def refresh_from_cv(self, cv_img):
+    def show_cv_image(self, cv_img):
         """Takes a image in array fromat and sets the image on the canvas
         to it"""
         new_tkimage = self.cv2tk_image(cv_img)
@@ -152,80 +167,138 @@ class Image_Processor:
         pass
 
     def left_mouse_down(self, event):
-        """Called whenever the left mouse is clicked on the image canves"""
-        x, y = int(self.canvas.canvasx(event.x)), int(self.canvas.canvasy(event.y))
+        """Called whenever the left mouse is clicked on the image canvas"""
+        x, y = self.to_canvas((event.x, event.y))
         if self.state == State.FLATTEN:
             # https://stackoverflow.com/questions/28615900/how-do-i-add-a-mouse-click-position-to-a-list-in-tkinter
             self.canvas.create_oval(x - 10, y - 10,
                                     x + 10, y + 10,
                                     fill='red', width=1, tags='corners')
+
             # add tuple (x, y) to existing list
             self.clicks.append((x, y))
+
             if len(self.clicks) >= 4:
                 rect = np.asarray([np.asarray(np.float32(p)) for p in
                                    self.clicks])
-                flat = nPTransform.four_point_transform(self.cv_image, rect)
+                flat = nPTransform.four_points_correct_aspect(self.final_cv_img,
+                                                              rect,
+                                                              self.dim[0],
+                                                              self.dim[1])
                 self.canvas.delete('corners')
-                self.refresh_from_cv(flat)
+                self.show_cv_image(flat)
                 self.enter_default_state()
-                self.cv_image = flat
+                self.final_cv_img = flat
+
         elif self.state == State.POLLY:
             pass
         elif self.state == State.CIRCLE:
             pass
 
     def left_mouse_move(self, event):
-        x, y = int(self.canvas.canvasx(event.x)), int(self.canvas.canvasy(event.y))
+        """Called whenever left mouse is moved while being held down
+           on canvas.
+        """
+        x, y = self.to_canvas((event.x, event.y))
 
         if self.state == State.POLLY:
-            temp = self.cv_image.copy()
-            self._draw_line_from_last_point(x, y, temp)
+            temp = self.final_cv_img.copy()
+            self._draw_line_from_last_click((x, y), temp)
+
+        elif self.state == State.CIRCLE:
+            temp = self.final_cv_img.copy()
+            self._draw_circle_from_last_click((x, y), temp)
+            self._draw_line_from_last_click((x, y), temp)
 
     def left_mouse_up(self, event):
-        x, y = int(self.canvas.canvasx(event.x)), int(self.canvas.canvasy(event.y))
+        """Called when ever left mouse button is released"""
+        x, y = self.to_canvas((event.x, event.y))
 
         if self.state == State.POLLY:
-            self._draw_line_from_last_point(x, y, self.cv_image)
+            self._draw_line_from_last_click((x, y), self.final_cv_img)
             self.clicks.append((x, y))
 
             if len(self.clicks) >= 4:
-                self._draw_line_from_last_point(self.clicks[0][0],
-                                                self.clicks[0][1],
-                                                self.cv_image)
-                self.refresh_from_cv(self.cv_image)
+                self._draw_line_from_last_click(self.clicks[0],
+                                                self.final_cv_img)
+                self.show_cv_image(self.final_cv_img)
+
+                print('Side 1:', self._dist(self.clicks[0], self.clicks[1])*self.px_size(), 'mm')
+                print('Side 2:', self._dist(self.clicks[1], self.clicks[2])*self.px_size(), 'mm')
+                print('Side 3:', self._dist(self.clicks[2], self.clicks[3])*self.px_size(), 'mm')
+                print('Side 4:', self._dist(self.clicks[3], self.clicks[0])*self.px_size(), 'mm')
 
                 quadrangle = Polygon(self.clicks)
-                if self.width is None:
-                    print(quadrangle.area, 'px^2')
-                else:
-                    print(quadrangle.area * self.px_size()**2, 'mm^2')
+
+                print('Area:', quadrangle.area * self.px_size()**2, 'mm^2')
 
                 self.enter_default_state()
+        elif self.state == State.CIRCLE:
 
-    def _draw_line_from_last_point(self, x, y, cv_image):
+            self._draw_line_from_last_click((x, y), self.final_cv_img)
+            self._draw_circle_from_last_click((x, y), self.final_cv_img)
+            self.clicks.append((x, y))
+
+            if len(self.clicks) >= 2:
+
+                radius = self._dist(self.clicks[0], self.clicks[1])
+
+                print('Radius:', radius)
+
+                print('Area:', np.pi * (radius ** 2))
+
+                self.state = State.DEFAULT
+
+    def to_canvas(self, point: Tuple[float, float]) -> Tuple[int, int]:
+        """Takes a point in the window and converts it to canvas space."""
+        return int(self.canvas.canvasx(point[0])),\
+            int(self.canvas.canvasy(point[1]))
+
+    def _draw_line_from_last_click(self, point, cv_image):
         if len(self.clicks) >= 1:
-            cv2.line(cv_image, self.clicks[-1], (x, y),
-                     (255, 0, 0), 5)
-            self.refresh_from_cv(cv_image)
+
+            cv2.line(cv_image, self.clicks[-1], point,
+                     LINE_COLOR, LINE_WIDTH)
+
+            text_org = ((point[0] + self.clicks[-1][0])//2,
+                        (point[1] + self.clicks[-1][1])//2 + int(TEXT_SIZE))
+
+            length = np.round(self._dist(self.clicks[-1], point)*self.px_size(), 2)
+
+            cv2.putText(cv_image,
+                        f'{length}mm'
+                        , text_org, TEXT_FONT, TEXT_SIZE, TEXT_COLOR,
+                        thickness=TEXT_THICKNESS)
+
+            self.show_cv_image(cv_image)
+
+    def _draw_circle_from_last_click(self, center, cv_image):
+        if len(self.clicks) >= 1:
+            cv2.circle(cv_image, center, int(self._dist(center, self.clicks[0]))
+                       , LINE_COLOR, LINE_WIDTH)
+            self.show_cv_image(cv_image)
 
     def px_size(self) -> float:
         """
         Precondition: Solar panel has already been flattened
-        :return: returns the size of a pixel in cm if width is None returns 1
+        :return: returns the size of a pixel in mm
         """
-        if self.width is not None:
-            x, y, _ = self.cv_image.shape
+        x, y, _ = self.final_cv_img.shape
 
-            px_size = self.width/min(x, y)
+        px_size = self.dim[0]/min(x, y)
 
-            return px_size
-        else:
-            return 1
+        return px_size
+
+    def _dist(self, point1:tuple, point2:tuple) -> int:
+        """Returns the distance in px between two points on the canvas"""
+        delta_x = abs(point1[0] - point2[0])
+        delta_y = abs(point1[1] - point2[1])
+        return np.sqrt(delta_x**2 + delta_y**2)
 
 
 if __name__ == '__main__':
     root = Tk()
-    pro = Image_Processor(root, 'Sample_Images/paper_2_in.jpg', 215.9)
+    pro = Image_Processor(root, 'Sample_Images/hd_solar.jpg', (215.9, 279.4))
     #cv2.imwrite("result.png", pro.process_image_at('Sample_Images/solar.jpg'))
     root.mainloop()
 
