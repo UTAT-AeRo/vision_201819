@@ -67,7 +67,7 @@ photo_label.pack()
 def end_program(final_data):
 	with open(json_out_name, 'w') as outfile:
 		outfile.write("{\"Positive\": ")
-		json.dump(final_data, outfile)
+		json.dump({"Positive": final_data}, outfile)
 		outfile.write("}")
 	exit() 
 
