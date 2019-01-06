@@ -9,4 +9,4 @@ images.
 - Python 3
 
 # Usage
-`python detect.py -i input_file -f output_file [-o output_directory]`
+`python detect.py -i input_directory -f output_file [-o output_directory]`

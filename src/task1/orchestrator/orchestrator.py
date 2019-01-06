@@ -2,202 +2,202 @@ import sys
 import os
 import subprocess
 import threading
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtCore, QtGui, QtWidgets
+import os
 
 # Constants
 jsondir = "./tmp/json/"
+m1autofilterpath = '../filter-module/detect.py'
 
 # Main Window
-class Window(QtGui.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         # Initialize Variables
         self.dir = ""
+        self.unlockedAutoFilterButton = False
+        self.unlockedManualFilterButton = False
 
         # Initialize Window
-        super(Window, self).__init__()
+        super(MainWindow, self).__init__()
         self.setGeometry(50, 50, 900, 550)
         self.setWindowTitle("AeRo Task 1 Program")
-        # self.setWindowIcon(QtGui.QIcon('pythonlogo.png'))
         self.home()
 
     def home(self):
         # Quit Button
-        btn = QtGui.QPushButton("Quit", self)
+        btn = QtWidgets.QPushButton("Quit", self)
         btn.clicked.connect(QtCore.QCoreApplication.instance().quit)
         btn.resize(200, 50)
         btn.move(680, 490)
 
         # Step 1 Label
-        bl = QtGui.QLabel(self)
+        bl = QtWidgets.QLabel(self)
         bl.setText("Step 1 -  select the source image folders")
         bl.resize(600, 50)
         bl.move(25, 20)
         bl.setStyleSheet('color: darkblue')
 
         # Step 2 Label
-        bl = QtGui.QLabel(self)
+        bl = QtWidgets.QLabel(self)
         bl.setText("Step 2 -  Run the modules. Keep in mind to run them in order if applicable")
         bl.resize(600, 50)
         bl.move(25, 200)
         bl.setStyleSheet('color: darkblue')
 
         # Select Directory Curr Directory
-        self.dirLabel = QtGui.QLabel(self)
+        self.dirLabel = QtWidgets.QLabel(self)
         self.dirLabel.setText(self.dir)
         self.dirLabel.resize(800, 50)
         self.dirLabel.move(230, 100)
 
         # Select Directory Button
-        btn = QtGui.QPushButton("Browse For Photo Directory", self)
+        btn = QtWidgets.QPushButton("Browse For Photo Directory", self)
         btn.clicked.connect(self.getDirectory)
         btn.resize(200, 50)
         btn.move(25, 90)
 
-        # Logo
-        pic = QtGui.QLabel(self)
-        # pic.move(25, 400)
-        pic.setGeometry(30, 465, 400, 100)
-        # use full ABSOLUTE path to the image, not relative
-        pic.setPixmap(QtGui.QPixmap(os.getcwd() + "/logo.png"))
-
         self.populateTask1()
         self.show()
 
+    # ugggghhhhh
     def populateTask1(self):
         # Module 1 Button
-        self.mb1 = QtGui.QPushButton("Module 1 - Auto Filter", self)
-        self.mb1.clicked.connect(self.launchTask1)
-        self.mb1.resize(200, 50)
-        self.mb1.move(25, 250)
-        self.mb1.setEnabled(False)
+        self.autofilterButton = QtWidgets.QPushButton("Module 1 - Auto Filter", self)
+        self.autofilterButton.clicked.connect(self.launchAutoFilterModule)
+        self.autofilterButton.resize(200, 50)
+        self.autofilterButton.move(25, 250)
+        self.autofilterButton.setEnabled(False)
 
         # Module 1 Label
-        self.m1s = QtGui.QLabel(self)
-        self.m1s.setText("Not Run")
-        self.m1s.resize(100, 50)
-        self.m1s.move(240, 250)
-        self.m1s.setStyleSheet('color: red')
+        self.autofilterLabel = QtWidgets.QLabel(self)
+        setNotRunLabel(self.autofilterLabel)
+        self.autofilterLabel.move(240, 250)
 
         # Module 2 Button
-        self.mb2 = QtGui.QPushButton("Module 2 - Human Filter", self)
+        self.manualfilterButton = QtWidgets.QPushButton("Module 2 - Human Filter", self)
         # self.mb1.clicked.connect(self.getDirectory)
-        self.mb2.resize(200, 50)
-        self.mb2.move(25, 300)
-        self.mb2.setEnabled(False)
+        self.manualfilterButton.resize(200, 50)
+        self.manualfilterButton.move(25, 300)
+        self.manualfilterButton.setEnabled(False)
 
         # Module 2 Label
-        self.m2s = QtGui.QLabel(self)
-        self.m2s.setText("Not Run")
-        self.m2s.resize(100, 50)
-        self.m2s.move(240, 300)
-        self.m2s.setStyleSheet('color: red')
+        self.manualFilterLabel = QtWidgets.QLabel(self)
+        setNotRunLabel(self.manualFilterLabel)
+        self.manualFilterLabel.move(240, 300)
 
         # Module 3 Button
-        self.mb3 = QtGui.QPushButton("Module 3 - Locate IR Pts", self)
-        # self.mb1.clicked.connect(self.getDirectory)
-        self.mb3.resize(200, 50)
-        self.mb3.move(25, 350)
-        self.mb3.setEnabled(False)
+        self.locateIRButton = QtWidgets.QPushButton("Module 3 - Locate IR Pts", self)
+        self.locateIRButton.resize(200, 50)
+        self.locateIRButton.move(25, 350)
+        self.locateIRButton.setEnabled(False)
 
         # Module 3 Label
-        self.m3s = QtGui.QLabel(self)
-        self.m3s.setText("Not Run")
-        self.m3s.resize(100, 50)
-        self.m3s.move(240, 350)
-        self.m3s.setStyleSheet('color: red')
+        self.locateIRLabel = QtWidgets.QLabel(self)
+        setNotRunLabel(self.locateIRLabel)
+        self.locateIRLabel.move(240, 350)
 
         # Module 4 Button
-        self.mb4 = QtGui.QPushButton("Module 4 - Plot On Map", self)
-        # self.mb1.clicked.connect(self.getDirectory)
-        self.mb4.resize(200, 50)
-        self.mb4.move(25, 400)
-        self.mb4.setEnabled(False)
+        self.plotButton = QtWidgets.QPushButton("Module 4 - Plot On Map", self)
+        self.plotButton.resize(200, 50)
+        self.plotButton.move(25, 400)
+        self.plotButton.setEnabled(False)
 
         # Module 4 Label
-        self.m4s = QtGui.QLabel(self)
-        self.m4s.setText("Not Run")
-        self.m4s.resize(100, 50)
-        self.m4s.move(240, 400)
-        self.m4s.setStyleSheet('color: red')
+        self.plotLabel = QtWidgets.QLabel(self)
+        setNotRunLabel(self.plotLabel)
+        self.plotLabel.move(240, 400)
 
         # Module AreaPercent Button
-        self.mb5 = QtGui.QPushButton("ID Degree of Damage", self)
-        # self.mb1.clicked.connect(self.getDirectory)
+        self.mb5 = QtWidgets.QPushButton("ID Degree of Damage", self)
         self.mb5.resize(200, 50)
         self.mb5.move(450, 250)
         self.mb5.setEnabled(False)
 
         # Module AreaPercent Label
-        self.mscs = QtGui.QLabel(self)
-        self.mscs.setText("Not Run")
-        self.mscs.resize(100, 50)
+        self.mscs = QtWidgets.QLabel(self)
+        setNotRunLabel(self.mscs)
         self.mscs.move(670, 250)
-        self.mscs.setStyleSheet('color: red')
 
         # Module 1 Button
-        self.mb6 = QtGui.QPushButton("ID Signif Changes", self)
-        # self.mb1.clicked.connect(self.getDirectory)
-        self.mb6.resize(200, 50)
-        self.mb6.move(450, 400)
-        self.mb6.setEnabled(False)
+        self.idSigChangesButton = QtWidgets.QPushButton("ID Signif Changes", self)
+        self.idSigChangesButton.resize(200, 50)
+        self.idSigChangesButton.move(450, 400)
+        self.idSigChangesButton.setEnabled(False)
 
         # Module 1 Label
-        self.mscs = QtGui.QLabel(self)
-        self.mscs.setText("Not Run")
-        self.mscs.resize(100, 50)
-        self.mscs.move(670, 400)
-        self.mscs.setStyleSheet('color: red')
+        self.idSigChangesLabel = QtWidgets.QLabel(self)
+        setNotRunLabel(self.idSigChangesLabel)
+        self.idSigChangesLabel.move(670, 400)
 
-
+    # fetches the director from the user and updates the program accordingly
     def getDirectory(self):
-        self.dir = QtGui.QFileDialog.getExistingDirectory(
+        self.dir = QtWidgets.QFileDialog.getExistingDirectory(
             self,
             "Open a folder",
             os.getcwd(),
-            QtGui.QFileDialog.ShowDirsOnly)
+            QtWidgets.QFileDialog.ShowDirsOnly)
 
         # Update GUI and unlock certain buttons
         self.dirLabel.setText(self.dir)
-        self.mb1.setEnabled(True)  # Auto Filter Button unlock
-        self.mb6.setEnabled(True)  # ID Sig Changes Button unlock
+        self.autofilterButton.setEnabled(True)  # Auto Filter Button unlock
+        self.idSigChangesButton.setEnabled(True)  # ID Sig Changes Button unlock
 
         # Start the main loop
         self.mainBGloop()
 
+    # The main loop that is in charge of periodically checking the status of the json files and updating the interface accordingly
+    # I know its not safe to change these buttons from a thread but I don't want to dive into signals right now
     def mainBGloop(self):
-        print("hi")
-        if os.path.isfile(jsondir + "autofilter.json"):
-            self.mb2.setEnabled(True)  # Auto Filter Button unlock
-            # Module 1 Label
-            self.m1s.setText("Completed")
-            self.m1s.resize(100, 50)
-            self.m1s.move(240, 250)
-            self.m1s.setStyleSheet('color: green')
+        if os.path.isfile(jsondir + "autofilter.json") and self.unlockedAutoFilterButton == False:
+            self.manualfilterButton.setEnabled(True)  # Manual Filter Button unlock
+            self.unlockedAutoFilterButton = True
+            updateTextCompletedGreen(self.autofilterLabel)
+
+        if os.path.isfile(jsondir + "manualfilter.json") and self.unlockedManualFilterButton == False:
+            self.locateIRButton.setEnabled(True)  # Locate IR Button unlock
+            self.unlockedManualFilterButton = True
+            updateTextCompletedGreen(self.manualFilterLabel)
 
         threading.Timer(1.0, self.mainBGloop).start()
 
-    def launchTask1(self):
-        r = subprocess.check_output(['ls', '-l', '/System/Library/'])
-        outputResultAlert(r)
+    # Launches the auto filter module and pipes the output into the current terminal
+    def launchAutoFilterModule(self):
+        print("\n\n\n\n\n\n=== Module 1 AutoFilter Output ===")
+        os.system("python3 ../filter-module/detect.py -i " + self.dir + " -f ./tmp/json/autofilter.json")
+        print("=== Output End ===\n\n\n\n\n\n")
+        runningDialog()
 
+    # Launches the manual filter module and pipes the output into the current terminal
+    def launchManualFilterModule(self):
+        print("\n\n\n\n\n\n=== Module 2 Manual Filtering output ===")
+        os.system("ls") # not implemented yet
+        print("=== Output End ===\n\n\n\n\n\n")
+        runningDialog()
 
-def outputResultAlert(details):
-    msg = QtGui.QMessageBox()
-    msg.setIcon(QtGui.QMessageBox.Information)
+# Given a QWidgetLabel, sets the label to not run
+def setNotRunLabel(l):
+    l.setText("Not Run")
+    l.resize(100, 50)
+    l.setStyleSheet('color: red')
 
-    msg.setText("The program has been ran")
-    msg.setInformativeText("Click Show Details to see the output of the program")
-    msg.setWindowTitle("Results")
-    msg.setDetailedText(details)
-    msg.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+# Given a QWidgetLabel, this function will update it to Completed and change the colour to green
+def updateTextCompletedGreen(label):
+    label.setText("Completed")
+    label.setStyleSheet('color: green')
 
+# Pops up a new QMessageBox notifying the user of the running module
+def runningDialog():
+    msg = QtWidgets.QMessageBox()
+    msg.setIcon(QtWidgets.QMessageBox.Information)
+
+    msg.setText("The module is running")
+    msg.setInformativeText("Please check the terminal for module output")
+    msg.setWindowTitle("Running")
+    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
     msg.exec_()
 
-def run():
-    app = QtGui.QApplication(sys.argv)
-    GUI = Window()
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    GUI = MainWindow()
     sys.exit(app.exec_())
-
-
-run()
