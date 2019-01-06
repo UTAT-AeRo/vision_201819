@@ -1,8 +1,13 @@
 import sys
 import os
+import subprocess
+import threading
 from PyQt4 import QtGui, QtCore
 
+# Constants
+jsondir = "./tmp/json/"
 
+# Main Window
 class Window(QtGui.QMainWindow):
 
     def __init__(self):
@@ -62,7 +67,7 @@ class Window(QtGui.QMainWindow):
     def populateTask1(self):
         # Module 1 Button
         self.mb1 = QtGui.QPushButton("Module 1 - Auto Filter", self)
-        # self.mb1.clicked.connect(self.getDirectory)
+        self.mb1.clicked.connect(self.launchTask1)
         self.mb1.resize(200, 50)
         self.mb1.move(25, 250)
         self.mb1.setEnabled(False)
@@ -157,8 +162,37 @@ class Window(QtGui.QMainWindow):
         self.mb1.setEnabled(True)  # Auto Filter Button unlock
         self.mb6.setEnabled(True)  # ID Sig Changes Button unlock
 
+        # Start the main loop
+        self.mainBGloop()
+
+    def mainBGloop(self):
+        print("hi")
+        if os.path.isfile(jsondir + "autofilter.json"):
+            self.mb2.setEnabled(True)  # Auto Filter Button unlock
+            # Module 1 Label
+            self.m1s.setText("Completed")
+            self.m1s.resize(100, 50)
+            self.m1s.move(240, 250)
+            self.m1s.setStyleSheet('color: green')
+
+        threading.Timer(1.0, self.mainBGloop).start()
+
+    def launchTask1(self):
+        r = subprocess.check_output(['ls', '-l', '/System/Library/'])
+        outputResultAlert(r)
 
 
+def outputResultAlert(details):
+    msg = QtGui.QMessageBox()
+    msg.setIcon(QtGui.QMessageBox.Information)
+
+    msg.setText("The program has been ran")
+    msg.setInformativeText("Click Show Details to see the output of the program")
+    msg.setWindowTitle("Results")
+    msg.setDetailedText(details)
+    msg.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+
+    msg.exec_()
 
 def run():
     app = QtGui.QApplication(sys.argv)
