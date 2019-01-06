@@ -22,7 +22,7 @@ class MarkerViewer(gui.Viewer):
         draw = ImageDraw.Draw(im)
         if hasattr(self, 'dots'):
             for coord in self.dots[filename]:
-                draw.rectangle([c_i - 10 for c_i in coord]+[c_i + 10 for c_i in coord],fill='red')
+                draw.rectangle([c_i - 10 for c_i in coord]+[c_i + 10 for c_i in coord],fill='white')
         return im
 
     def on_click(self, button_press_event):
@@ -40,6 +40,7 @@ class MarkerViewer(gui.Viewer):
 
     def handle_done(self):
         with open(self.output_file, 'w') as fp:
+            # call projection code here
             json.dump(self.dots, fp)
         self.top.destroy()
 
