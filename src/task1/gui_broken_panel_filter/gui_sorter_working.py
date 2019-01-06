@@ -29,9 +29,15 @@ Plan of action:
 	3. (done)Make a navigation system for going back/forward through photos (arrow keys)
 	4. (done)Make an internal data storage system (list of names of good images)
 	5. (done)Create a data export system to JSON (in proper format)
-	6. Find a way to make sure all the images are constrianed to fit the window
-	7. _awaiting slack input from Timothy_ ensure proper IO for this module
+	6. (done)Find a way to make sure all the images are constrianed to fit the window
+	7. (done)Ensure proper IO for this module
 '''
+
+def getScaledDims(xdim, ydim):
+	if (xdim/1280 > ydim/720):
+		return [1280, int(ydim*(1280/xdim))]
+	else:
+		return [int(xdim*(720/ydim)), 720]
 
 # System arguments 1 and 2: The input and output file names
 json_file_name = sys.argv[2]
@@ -52,6 +58,8 @@ root = Tk() # Code for making a GUI
 
 # Setting the image for the first time
 img = ImageTk.PhotoImage(Image.open(img_names[counter]))
+scaleDims = getScaledDims(img.width(), img.height())
+img = ImageTk.PhotoImage( (Image.open(img_names[counter]).resize((scaleDims[0], scaleDims[1]))) )
 photo_label = Label(root, image = img)
 photo_label.pack()
 
@@ -75,6 +83,10 @@ def good_image(e):
 
 	print("good")
 	img2 = ImageTk.PhotoImage(Image.open(img_names[counter]))
+
+	scaleDims = getScaledDims(img2.width(), img2.height())
+	img2 = ImageTk.PhotoImage( (Image.open(img_names[counter]).resize((scaleDims[0], scaleDims[1]))) )
+
 	photo_label.configure(image=img2)
 	photo_label.image = img2
 	print(good_images)
@@ -94,6 +106,10 @@ def bad_image(e):
 		end_program(good_images)
 	print("bad")
 	img2 = ImageTk.PhotoImage(Image.open(img_names[counter]))
+
+	scaleDims = getScaledDims(img2.width(), img2.height())
+	img2 = ImageTk.PhotoImage( (Image.open(img_names[counter]).resize((scaleDims[0], scaleDims[1]))) )
+
 	photo_label.configure(image=img2)
 	photo_label.image = img2
 	print(good_images)
@@ -108,9 +124,14 @@ def undo(e):
 	counter -= 1 #TODO: Prevent out of bounds
 	print("undo")
 	img2 = ImageTk.PhotoImage(Image.open(img_names[counter]))
+
+	scaleDims = getScaledDims(img2.width(), img2.height())
+	img2 = ImageTk.PhotoImage( (Image.open(img_names[counter]).resize((scaleDims[0], scaleDims[1]))) )
+
 	photo_label.configure(image=img2)
 	photo_label.image = img2
 	print(good_images)
+
 
 # Binding keys to commands
 root.bind("<Right>", good_image)
