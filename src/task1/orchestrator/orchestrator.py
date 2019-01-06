@@ -11,7 +11,6 @@ m1autofilterpath = '../filter-module/detect.py'
 
 # Main Window
 class MainWindow(QtWidgets.QMainWindow):
-
     def __init__(self):
         # Initialize Variables
         self.dir = ""
@@ -65,65 +64,59 @@ class MainWindow(QtWidgets.QMainWindow):
         # Module 1 Button
         self.autofilterButton = QtWidgets.QPushButton("Module 1 - Auto Filter", self)
         self.autofilterButton.clicked.connect(self.launchAutoFilterModule)
-        self.autofilterButton.resize(200, 50)
         self.autofilterButton.move(25, 250)
-        self.autofilterButton.setEnabled(False)
+        setModuleButtonProperties(self.autofilterButton)
 
         # Module 1 Label
         self.autofilterLabel = QtWidgets.QLabel(self)
-        setNotRunLabel(self.autofilterLabel)
         self.autofilterLabel.move(240, 250)
+        setNotRunLabel(self.autofilterLabel)
 
         # Module 2 Button
         self.manualfilterButton = QtWidgets.QPushButton("Module 2 - Human Filter", self)
-        # self.mb1.clicked.connect(self.getDirectory)
-        self.manualfilterButton.resize(200, 50)
+        self.manualfilterButton.clicked.connect(self.launchManualFilterModule)
         self.manualfilterButton.move(25, 300)
-        self.manualfilterButton.setEnabled(False)
+        setModuleButtonProperties(self.manualfilterButton)
 
         # Module 2 Label
         self.manualFilterLabel = QtWidgets.QLabel(self)
-        setNotRunLabel(self.manualFilterLabel)
         self.manualFilterLabel.move(240, 300)
+        setNotRunLabel(self.manualFilterLabel)
 
         # Module 3 Button
         self.locateIRButton = QtWidgets.QPushButton("Module 3 - Locate IR Pts", self)
-        self.locateIRButton.resize(200, 50)
         self.locateIRButton.move(25, 350)
-        self.locateIRButton.setEnabled(False)
+        setModuleButtonProperties(self.locateIRButton)
 
         # Module 3 Label
         self.locateIRLabel = QtWidgets.QLabel(self)
-        setNotRunLabel(self.locateIRLabel)
         self.locateIRLabel.move(240, 350)
+        setNotRunLabel(self.locateIRLabel)
 
         # Module 4 Button
         self.plotButton = QtWidgets.QPushButton("Module 4 - Plot On Map", self)
-        self.plotButton.resize(200, 50)
         self.plotButton.move(25, 400)
-        self.plotButton.setEnabled(False)
+        setModuleButtonProperties(self.plotButton)
 
         # Module 4 Label
         self.plotLabel = QtWidgets.QLabel(self)
-        setNotRunLabel(self.plotLabel)
         self.plotLabel.move(240, 400)
+        setNotRunLabel(self.plotLabel)
 
         # Module AreaPercent Button
         self.mb5 = QtWidgets.QPushButton("ID Degree of Damage", self)
-        self.mb5.resize(200, 50)
         self.mb5.move(450, 250)
-        self.mb5.setEnabled(False)
+        setModuleButtonProperties(self.mb5)
 
         # Module AreaPercent Label
         self.mscs = QtWidgets.QLabel(self)
-        setNotRunLabel(self.mscs)
         self.mscs.move(670, 250)
+        setNotRunLabel(self.mscs)
 
         # Module 1 Button
         self.idSigChangesButton = QtWidgets.QPushButton("ID Signif Changes", self)
-        self.idSigChangesButton.resize(200, 50)
         self.idSigChangesButton.move(450, 400)
-        self.idSigChangesButton.setEnabled(False)
+        setModuleButtonProperties(self.idSigChangesButton)
 
         # Module 1 Label
         self.idSigChangesLabel = QtWidgets.QLabel(self)
@@ -171,7 +164,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # Launches the manual filter module and pipes the output into the current terminal
     def launchManualFilterModule(self):
         print("\n\n\n\n\n\n=== Module 2 Manual Filtering output ===")
-        os.system("ls") # not implemented yet
+        os.system("python3 ../gui_broken_panel_filter/gui_sorter_working.py --from ./tmp/json/autofilter.json --to ./tmp/json/manualfilter.json")
         print("=== Output End ===\n\n\n\n\n\n")
         runningDialog()
 
@@ -180,6 +173,11 @@ def setNotRunLabel(l):
     l.setText("Not Run")
     l.resize(100, 50)
     l.setStyleSheet('color: red')
+
+# Given a QWidgetButton, sets the properties of the button for the start of the program
+def setModuleButtonProperties(b):
+    b.resize(200, 50)
+    b.setEnabled(False)
 
 # Given a QWidgetLabel, this function will update it to Completed and change the colour to green
 def updateTextCompletedGreen(label):
