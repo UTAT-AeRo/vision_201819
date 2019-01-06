@@ -69,7 +69,7 @@ def run(input_dir, output_dir):
                 rel_out_path = os.path.join(output_dir, f)
             img = process_img(rel_path)
             if img is not None:
-                pos_images.append(f)
+                pos_images.append(os.path.abspath(rel_path))
                 if rel_out_path is not None:
                     cv2.imwrite(rel_out_path, img)
     return pos_images
