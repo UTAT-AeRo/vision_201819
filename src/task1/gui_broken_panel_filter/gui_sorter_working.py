@@ -83,7 +83,7 @@ def good_image(e):
 	if(counter >= len(img_names)):
 		end_program(good_images)
 
-	# print("good")
+	print("good")
 	img2 = ImageTk.PhotoImage(Image.open(img_names[counter]))
 
 	scaleDims = getScaledDims(img2.width(), img2.height())
@@ -91,7 +91,6 @@ def good_image(e):
 
 	photo_label.configure(image=img2)
 	photo_label.image = img2
-	# print(good_images)
 
 # Function called when we "left-swipe" (left arrow key)
 def bad_image(e):
@@ -99,14 +98,13 @@ def bad_image(e):
 	global good_images
 
 	if (img_names[counter] in good_images):
-		print("REMOVING GARBAGE")
 		bad_index = good_images.index(img_names[counter])
 		good_images.pop(bad_index)
 
 	counter += 1
 	if(counter == len(img_names)):
 		end_program(good_images)
-	# print("bad")
+	print("bad")
 	img2 = ImageTk.PhotoImage(Image.open(img_names[counter]))
 
 	scaleDims = getScaledDims(img2.width(), img2.height())
@@ -114,7 +112,6 @@ def bad_image(e):
 
 	photo_label.configure(image=img2)
 	photo_label.image = img2
-	# print(good_images)
 
 # When up arrow key is pressed, we reverse the last action (undo)
 def undo(e):
@@ -124,7 +121,7 @@ def undo(e):
 	if len(good_images) > 0:
 		good_images.pop(len(good_images)-1)
 	counter -= 1 #TODO: Prevent out of bounds
-	# print("undo")
+	print("undo")
 	img2 = ImageTk.PhotoImage(Image.open(img_names[counter]))
 
 	scaleDims = getScaledDims(img2.width(), img2.height())
@@ -132,7 +129,6 @@ def undo(e):
 
 	photo_label.configure(image=img2)
 	photo_label.image = img2
-	# print(good_images)
 
 
 # Binding keys to commands
