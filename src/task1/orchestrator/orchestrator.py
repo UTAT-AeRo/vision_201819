@@ -7,7 +7,9 @@ import os
 
 # Constants
 jsondir = "./tmp/json/"
-m1autofilterpath = '../filter-module/detect.py'
+autoFilterOutputPath = jsondir + "autofilter.json"
+manualFilterOutputPath = jsondir + "manualfilter.json"
+irLocateOutputPath = jsondir + "irlocate.json"
 
 # Main Window
 class MainWindow(QtWidgets.QMainWindow):
@@ -158,14 +160,22 @@ class MainWindow(QtWidgets.QMainWindow):
     def launchAutoFilterModule(self):
         runningDialog()
         print("\n\n\n\n\n\n=== Module 1 AutoFilter Output ===")
-        os.system("python3 ../filter-module/detect.py -i " + self.dir + " -f ./tmp/json/autofilter.json")
+        os.system("python3 ../filter-module/detect.py -i " + self.dir + " -f " + autoFilterOutputPath)
         print("=== Output End ===\n\n\n\n\n\n")
 
     # Launches the manual filter module and pipes the output into the current terminal
     def launchManualFilterModule(self):
         runningDialog()
         print("\n\n\n\n\n\n=== Module 2 Manual Filtering output ===")
-        os.system("python3 ../gui_broken_panel_filter/gui_sorter_working.py --from ./tmp/json/autofilter.json --to ./tmp/json/manualfilter.json")
+        os.system("python3 ../gui_broken_panel_filter/gui_sorter_working.py --from " + autoFilterOutputPath + " --to " + manualFilterOutputPath)
+        print("=== Output End ===\n\n\n\n\n\n")
+
+    # Launches the IR location module and pipes the output into the current terminal
+    def launchLocateIRModule(self):
+        runningDialog()
+        print("\n\n\n\n\n\n=== Module 3 Locate IR output ===")
+        os.system(
+            "python3 ../mark-damaged-module/markergui.py -i " + manualFilterOutputPath + " -o " + irLocateOutputPath)
         print("=== Output End ===\n\n\n\n\n\n")
 
 # Given a QWidgetLabel, sets the label to not run
