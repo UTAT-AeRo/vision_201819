@@ -1,0 +1,11 @@
+{
+	topleft: {
+		lat: 48.521839,
+		long: -71.653898
+	},
+	bottomright: {
+		lat: 48.501051,
+		long: -71.629110
+	},
+	filename: "samplemap.jpg"
+}
