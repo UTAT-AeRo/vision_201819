@@ -140,5 +140,10 @@ root.bind("<Right>", good_image)
 root.bind("<Left>", bad_image)
 root.bind("<Up>", undo)
 
+# Putting instructions on the screen:
+
+w = Label(root, text=("Right arrow for real damage, left for fake damage, up arrow to go back."))
+w.pack()
+
 # Command to run the GUI - do not delete :)
 root.mainloop()
