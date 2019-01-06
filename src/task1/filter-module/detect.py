@@ -1,4 +1,3 @@
-import sys
 import cv2
 import imutils
 from imutils import contours
