@@ -156,17 +156,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Launches the auto filter module and pipes the output into the current terminal
     def launchAutoFilterModule(self):
+        runningDialog()
         print("\n\n\n\n\n\n=== Module 1 AutoFilter Output ===")
         os.system("python3 ../filter-module/detect.py -i " + self.dir + " -f ./tmp/json/autofilter.json")
         print("=== Output End ===\n\n\n\n\n\n")
-        runningDialog()
 
     # Launches the manual filter module and pipes the output into the current terminal
     def launchManualFilterModule(self):
+        runningDialog()
         print("\n\n\n\n\n\n=== Module 2 Manual Filtering output ===")
         os.system("python3 ../gui_broken_panel_filter/gui_sorter_working.py --from ./tmp/json/autofilter.json --to ./tmp/json/manualfilter.json")
         print("=== Output End ===\n\n\n\n\n\n")
-        runningDialog()
 
 # Given a QWidgetLabel, sets the label to not run
 def setNotRunLabel(l):
