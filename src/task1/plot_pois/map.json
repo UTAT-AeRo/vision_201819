@@ -1,0 +1,11 @@
+{
+   "topleft":{
+      "lat":48.521697,
+      "long":-71.656052
+   }, 
+   "bottomright":{
+      "lat":48.501890,
+      "long":-71.621638
+   },
+   "filename":"samplemap.jpg"
+} 

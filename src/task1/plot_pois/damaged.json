@@ -1,0 +1,14 @@
+{
+   "damaged":[
+      {
+         "lat":48.511445,
+         "long":-71.641504,
+         "filename":"img_0124.jpg"
+      },
+	  {
+		"lat":48.511333,
+		"long":-71.650733,
+		"filename":"img.jpg"
+	  }
+   ]
+}
