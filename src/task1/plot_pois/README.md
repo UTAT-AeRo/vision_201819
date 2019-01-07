@@ -1,7 +1,7 @@
 Example Module
 ---
 # Description
-Place two JSON files as follows (note: everything is case-insensitive). **Filenames are relative to the script!**
+Place two JSON files as follows. **Filenames are relative to the script!**
 
 ## Input
 ###map.json
@@ -43,6 +43,7 @@ Unless otherwise provided, the script defaults to the following output name: usc
 
 # Prerequisites
 - Python 3
+- numpy
 
 # Usage
 You can type `plot_pois.py -h` to get more information.

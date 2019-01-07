@@ -1,11 +1,11 @@
 {
    "topleft":{
-      "lat":48.521839,
-      "long":-71.653898
-   },
+      "lat":48.521697,
+      "long":-71.656052
+   }, 
    "bottomright":{
-      "lat":48.501051,
-      "long":-71.62911
+      "lat":48.501890,
+      "long":-71.621638
    },
    "filename":"samplemap.jpg"
-}
+} 
