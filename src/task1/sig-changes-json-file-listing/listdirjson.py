@@ -20,11 +20,10 @@ def define_args():
 # Entry point for the program
 def run(input_dir):
     pos_images = []
-    for root, dirs, files in os.walk(input_dir):
+    for root, _, files in os.walk(input_dir):
         for f in files:
             rel_path = os.path.join(root, f)
             pos_images.append(os.path.abspath(rel_path))
-            print(rel_path)
     return pos_images
 
 if __name__ == "__main__":
@@ -35,5 +34,5 @@ if __name__ == "__main__":
 
     # Get output positive images
     pos_images = run(input_dir)
-    # with os.open(output_file, 'w') as outfile:
-    #     json.dump(pos_images, outfile)
+    with open(output_file, 'w') as outfile:
+        json.dump({"positive":pos_images}, outfile)
