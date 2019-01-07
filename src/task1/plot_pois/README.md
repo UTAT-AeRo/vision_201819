@@ -1,4 +1,4 @@
-Example Module
+Plot POIs Module
 ---
 # Description
 Place two JSON files as follows. **Filenames are relative to the script!**
@@ -48,7 +48,8 @@ Unless otherwise provided, the script defaults to the following output name: usc
 # Usage
 You can type `plot_pois.py -h` to get more information.
 ```
-usage: plot_pois.py [-h] [-im INPUTMAP] [-id INPUTDAMAGED] [-i OUTPUT]
+usage: plot_pois.py [-h] [-im INPUTMAP] [-id INPUTDAMAGED] [-o OUTPUT]
+                    [-pi PINIMAGE] [-ps PINSCALE]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -56,7 +57,10 @@ optional arguments:
                         The location/filename of the input map json file.
   -id INPUTDAMAGED, --inputdamaged INPUTDAMAGED
                         The location/filanem of the damaged panels JSON file.
-  -i OUTPUT, --output OUTPUT
+  -o OUTPUT, --output OUTPUT
                         The output file name.
+  -pi PINIMAGE, --pinimage PINIMAGE
+                        The file name of the marker image.
+  -ps PINSCALE, --pinscale PINSCALE
+                        The scale you'd like for the pin image.
 ```
-
