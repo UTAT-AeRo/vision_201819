@@ -1,9 +1,8 @@
 from tkinter import *
 from PIL import Image, ImageTk
 import cv2
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Dict
 import numpy as np
-import ntpath
 import os
 
 
@@ -15,16 +14,17 @@ class Image_GUI:
     ==== Atributes ===
     master: the root of the gui
     canvas: the canvas containing the image being edited
-    cv_img: The final image to be saved in the form of a np.array
+    final_cv_img: The final image to be saved in the form of a np.array
     tk_image: the image currently being displayed on the screen.
     im_on_canvas: id of the image on the canvas.
     paths: A list of all images to be loaded
     _img_counter: Index of current image in paths being used.
     save_to: the path to which the images will be saved
+    im_on_canvas: the id of the image on the canvas
     """
     master: Tk
     canvas: Canvas
-    cv_img: np.ndarray
+    final_cv_img: np.ndarray
     tk_image: PhotoImage
     paths: List[str]
     _img_counter: int
@@ -68,8 +68,8 @@ class Image_GUI:
         self.canvas.grid(row=0, column=0, sticky=N + S + E + W)
         photo_frame.pack(fill=BOTH, expand=1)
 
-        self.cv_img = cv2.imread(paths[0])
-        self.tk_image = self.cv2tk_image(self.cv_img)
+        self.final_cv_img = cv2.imread(paths[0])
+        self.tk_image = self.cv2tk_image(self.final_cv_img)
 
         self.im_on_canvas = self.canvas.create_image(0, 0, image=self.tk_image,
                                                      anchor="nw",
@@ -108,8 +108,8 @@ class Image_GUI:
         return int(self.canvas.canvasx(point[0])),\
             int(self.canvas.canvasy(point[1]))
 
-    def save_img_to_folder_with_extra(self, extra: str, img: np.ndarray):
-        """Save the given <img> to the save_to folder
+    def save_img_to_folder_with_extra(self, extra: str):
+        """Save the final_cv_img to the save_to folder
         with <extra> added to its name"""
         if not os.path.exists(self.save_to):
             os.makedirs(self.save_to)
@@ -122,10 +122,10 @@ class Image_GUI:
             sections = slit[:-1]
             extension = slit[-1]
             path = os.path.join(self.save_to, '.'.join(sections) + extra + '.' + extension)
-            cv2.imwrite(path, img)
+            cv2.imwrite(path, self.final_cv_img)
         else:
             path = os.path.join(self.save_to, name + extra)
-            cv2.imwrite(path, img)
+            cv2.imwrite(path, self.final_cv_img)
 
     def load_next_img_or_end(self):
         """Loads next image from paths if there are no more images to load
@@ -133,14 +133,18 @@ class Image_GUI:
         """
         if self._img_counter < len(self.paths) - 1:
             self._img_counter += 1
-            self.cv_img = cv2.imread(self.paths[self._img_counter])
-            self.show_cv_image(self.cv_img)
+            self.reload()
         else:
             self.master.destroy()
+
+    def reload(self):
+        """reload the current image from the path"""
+        self.final_cv_img = cv2.imread(self.paths[self._img_counter])
+        self.show_cv_image(self.final_cv_img)
 
 
 if __name__ == '__main__':
     root = Tk()
-    pro = Image_GUI(root, ['Sample_Images/solar.jpg'])
+    pro = Image_GUI(root, ['Sample_Images/Test_Images/2018-05-25_16-22-29-018.bmp'], 'test')
     #cv2.imwrite("result.png", pro.process_image_at('Sample_Images/solar.jpg'))
     root.mainloop()
