@@ -52,26 +52,27 @@ try:
 	pin_image_height = pin_image.shape[0];
 	pin_image_alpha = pin_image[:,:,3] /255.0;	
 	im_image_alpha = 1.0 - pin_image_alpha;
-	print(pin_image_alpha.shape);
-	print(im_image_alpha.shape);
-	cv.imshow('',pin_image);
-	cv.waitKey(0);		
 except Exception as e:
-	print('Could not lead and manipulate pin image.');
+	print('Could not load and manipulate pin image.');
 	print(e);
 	exit();
 
-print('Plot POIs Configuration Setup:');
+print('Plot POIs (v2) Configuration Setup:');
 print('-------------------------');
 print('Map file:', im_file);
 print('Damaged file:', id_file);
 print('Output file:',output_file);
-97
+
 # Read the file into 
 im_img = cv.imread(im_json['filename']);
 im_imgsize = im_img.shape;
 im_width = im_imgsize[1];
 im_height = im_imgsize[0];
+
+# Construct a fit using the given points
+# We know the earth is an ellipsoid
+# 
+
 
 im_tl = im_json['topleft'];
 im_br = im_json['bottomright'];
