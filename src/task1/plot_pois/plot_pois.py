@@ -11,11 +11,14 @@ from datetime import datetime as dt
 
 # https://docs.python.org/2/howto/argparse.html
 _p = argparse.ArgumentParser()
-_p.add_argument("-im", '--inputmap', type=str, help="The location/filename of the input map json file.", default="map.json");
-_p.add_argument('-id', '--inputdamaged', type=str, help="The location/filanem of the damaged panels JSON file.", default="damaged.json");
-_p.add_argument("-o", '--output', type=str, help="The output file name.", default="usc_utataero_" + dt.now().strftime('%Y%m%d_%H:%M:%S') + ".jpg");
-_p.add_argument("-pi", '--pinimage', type=str, help="The file name of the marker image.", default="pinpoint.png");
-_p.add_argument("-ps", '--pinscale', type=float, help="The scale you'd like for the pin image.", default=0.05);
+_p.add_argument("-im", '--inputmap', type=str, help="The location/filename of the input map json file. Default = map.json", default="map.json");
+_p.add_argument('-id', '--inputdamaged', type=str, help="The location/filanem of the damaged panels JSON file. Default = damaged.json", default="damaged.json");
+_p.add_argument("-o", '--output', type=str, help="The output file name. Default = usc_utataero_YYYYMMDD_HHMMSS.jpg", default="usc_utataero_" + dt.now().strftime('%Y%m%d_%H%M%S') + ".jpg");
+_p.add_argument("-pi", '--pinimage', type=str, help="The file name of the marker image. Default = pinpoint.png", default="pinpoint.png");
+_p.add_argument("-ps", '--pinscale', type=float, help="The scale you'd like for the pin image. Default = 0.05", default=0.05);
+_p.add_argument("-fs", '--fontscale', type=float, help="The font size you'd like. Default = 1.0 ", default=1);
+_p.add_argument("-ft", '--fontthickness', type=int, help="The font thickness you'd like. Default = 1 (integers only!)", default=1);
+# TODO: font-positions
 _a = _p.parse_args();
 
 # Terminology:
@@ -94,6 +97,7 @@ lat2y = poly([intercept_y,slope_y]);
 for coords in id_json['damaged']:
 	lat = coords['lat'];
 	long = coords['long'];
+	msg = coords['message'];
 	
 	# Convert them to their pixel values
 	px = long2x(long);
@@ -104,10 +108,20 @@ for coords in id_json['damaged']:
 	pxd = int(px - pin_image_width/2);
 	pxd2 = int(pxd + pin_image_width);
 	pyd = int(py - pin_image_height);
-	pyd2 = int(pyd + pin_image_height);	
+	pyd2 = int(pyd + pin_image_height);		
+	
+	
 	for chan in range(0,3): 
 		# we replace channels on the destination image..	
-		im_img[pyd:pyd2,pxd:pxd2,chan] = (pin_image_alpha * pin_image[:, :, chan] + im_image_alpha * im_img[pyd:pyd2,pxd:pxd2,chan]);
+		im_img[pyd:pyd2,pxd:pxd2,chan] = (pin_image_alpha * pin_image[:, :, chan] + im_image_alpha * im_img[pyd:pyd2,pxd:pxd2,chan]);		
+		_size = cv.getTextSize(msg, cv.FONT_HERSHEY_PLAIN, _a.fontscale, _a.fontthickness);
+	
+	text_width = _size[0][0]
+	text_x = int(px - text_width/2)
+	text_y = pyd - 10
+	
+	# Center and place message	
+	cv.putText(im_img, msg, (text_x,text_y), cv.FONT_HERSHEY_PLAIN, _a.fontscale, (0,0,255),2, 8);		
 
 # output new image
 cv.imwrite(output_file, im_img);
