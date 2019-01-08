@@ -5,12 +5,15 @@ import sys
 import cv2 as cv
 import numpy
 import argparse
+from scipy import stats
+from numpy.polynomial import Polynomial as poly
+from datetime import datetime as dt
 
 # https://docs.python.org/2/howto/argparse.html
 _p = argparse.ArgumentParser()
 _p.add_argument("-im", '--inputmap', type=str, help="The location/filename of the input map json file.", default="map.json");
 _p.add_argument('-id', '--inputdamaged', type=str, help="The location/filanem of the damaged panels JSON file.", default="damaged.json");
-_p.add_argument("-o", '--output', type=str, help="The output file name.", default="usc_utataero_....jpg");
+_p.add_argument("-o", '--output', type=str, help="The output file name.", default="usc_utataero_" + dt.now().strftime('%Y%m%d_%H:%M:%S') + ".jpg");
 _p.add_argument("-pi", '--pinimage', type=str, help="The file name of the marker image.", default="pinpoint.png");
 _p.add_argument("-ps", '--pinscale', type=float, help="The scale you'd like for the pin image.", default=0.05);
 _a = _p.parse_args();
@@ -24,7 +27,7 @@ try:
 	with open(im_file, 'r') as f:
 		im_json = json.load(f);			
 except Exception as e:
-	print('Could not open input map.');
+	print('Could not open input JSON file.');
 	print(e);
 	exit()
 	
@@ -70,24 +73,31 @@ im_width = im_imgsize[1];
 im_height = im_imgsize[0];
 
 # Construct a fit using the given points
-# We know the earth is an ellipsoid
-# 
+# The region we are dealing with is small, each dimension is 6.65 millionth of the total radius @ 45deg latitude
+# So assume that a linear fit is accurate, but our points have some error
+# Thus, we do a linear regression
+given_lats = [];
+given_x = [];
+given_longs = [];
+given_y = [];
+for point in im_json['points']:
+	given_lats.append(point['lat']);
+	given_x.append(point['x']);
+	given_longs.append(point['long']);
+	given_y.append(point['y']);
+slope_x, intercept_x, r_value_x, p_value_x, std_err_x = stats.linregress(given_longs,given_x);
+slope_y, intercept_y, r_value_y, p_value_y, std_err_y = stats.linregress(given_lats,given_y);
+long2x = poly([intercept_x, slope_x])
+lat2y = poly([intercept_y,slope_y]);
 
-
-im_tl = im_json['topleft'];
-im_br = im_json['bottomright'];
-dx = im_br['long'] - im_tl['long'];
-dy = im_tl['lat'] - im_br['lat'];
-
-# For each coordinate position we have
+# Now take the GPs coordinates of the damaged panels and
 for coords in id_json['damaged']:
-	# place a marker 
 	lat = coords['lat'];
 	long = coords['long'];
 	
-	# pixel along x
-	px = ((long - im_tl['long'])/dx) * im_width;
-	py = ((im_tl['lat'] - lat)/dy) * im_height;
+	# Convert them to their pixel values
+	px = long2x(long);
+	py = lat2y(lat);
 	
 	# at x,y the image is drawn to the right and then bottom
 	# So we go -width/2 and -height
@@ -99,6 +109,5 @@ for coords in id_json['damaged']:
 		# we replace channels on the destination image..	
 		im_img[pyd:pyd2,pxd:pxd2,chan] = (pin_image_alpha * pin_image[:, :, chan] + im_image_alpha * im_img[pyd:pyd2,pxd:pxd2,chan]);
 
-							  
 # output new image
 cv.imwrite(output_file, im_img);

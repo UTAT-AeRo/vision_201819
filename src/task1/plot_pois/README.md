@@ -3,16 +3,24 @@ Plot POIs Module v2
 # Description
 The purpose of this program is to mark a map with points of interest (POI). This version takes a series of known point coordinates as input and a series of damaged panel locations and produces a final output map with the POIs.
 
+Note that (x,y) is (0,0) at the top-left corner of the image.
+
 ## Input
-###map.json
+### map.json
 ```
 {
 	"points" : [
 		{
-			"lat":
-			"long":
-			"x":
-			"y":
+			"lat": 123.456,
+			"long": 123.456,
+			"x": 123,
+			"y": 123
+		},
+		{		
+			"lat": 1337.1337,
+			"long": 1337.1337,
+			"x": 99,
+			"y": 99
 		},
 		...
 	],
@@ -20,7 +28,7 @@ The purpose of this program is to mark a map with points of interest (POI). This
 }
 ```
 
-###damaged.json**
+### damaged.json**
 ```
 {
 	damaged: [
@@ -46,6 +54,7 @@ Unless otherwise provided, the script defaults to the following output name: usc
 - Python 3
 - numpy
 - opencv
+- scipy
 
 # Usage
 You can type `plot_pois.py -h` to get more information.
