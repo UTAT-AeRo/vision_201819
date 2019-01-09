@@ -4,6 +4,8 @@
 .idea/modules.xml
 .idea/misc.xml
 
+src/task1/orchestrator/tmp/json/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,34 +1,34 @@
 import sys
-import os
-import subprocess
 import threading
 from PyQt5 import QtCore, QtGui, QtWidgets
 import os
 
 # Constants
 jsondir = "./tmp/json/"
-m1autofilterpath = '../filter-module/detect.py'
+autoFilterOutputPath = jsondir + "autofilter.json"
+manualFilterOutputPath = jsondir + "manualfilter.json"
+irLocateOutputPath = jsondir + "irlocate.json"
+idSigChangesOutputPath = jsondir + "significantchanges.json"
 
 # Main Window
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         # Initialize Variables
         self.dir = ""
-        self.unlockedAutoFilterButton = False
-        self.unlockedManualFilterButton = False
+        self.exitRequested = False
 
         # Initialize Window
         super(MainWindow, self).__init__()
-        self.setGeometry(50, 50, 900, 550)
+        self.setGeometry(50, 50, 950, 550)
         self.setWindowTitle("AeRo Task 1 Program")
         self.home()
 
     def home(self):
         # Quit Button
         btn = QtWidgets.QPushButton("Quit", self)
-        btn.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        btn.clicked.connect(self.exitProgram)
         btn.resize(200, 50)
-        btn.move(680, 490)
+        btn.move(730, 490)
 
         # Step 1 Label
         bl = QtWidgets.QLabel(self)
@@ -72,6 +72,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.autofilterLabel.move(240, 250)
         setNotRunLabel(self.autofilterLabel)
 
+        # ID Changes Button
+        self.idSigChangesButton = QtWidgets.QPushButton("ID Signif Changes", self)
+        self.idSigChangesButton.move(325, 250)
+        setModuleButtonProperties(self.idSigChangesButton)
+
+        # ID Changes Label
+        self.idSigChangesLabel = QtWidgets.QLabel(self)
+        setNotRunLabel(self.idSigChangesLabel)
+        self.idSigChangesLabel.move(545, 250)
+
         # Module 2 Button
         self.manualfilterButton = QtWidgets.QPushButton("Module 2 - Human Filter", self)
         self.manualfilterButton.clicked.connect(self.launchManualFilterModule)
@@ -85,6 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Module 3 Button
         self.locateIRButton = QtWidgets.QPushButton("Module 3 - Locate IR Pts", self)
+        self.manualfilterButton.clicked.connect(self.launchLocateIRModule)
         self.locateIRButton.move(25, 350)
         setModuleButtonProperties(self.locateIRButton)
 
@@ -92,6 +103,26 @@ class MainWindow(QtWidgets.QMainWindow):
         self.locateIRLabel = QtWidgets.QLabel(self)
         self.locateIRLabel.move(240, 350)
         setNotRunLabel(self.locateIRLabel)
+
+        # Module FlattenImages Button
+        self.flattenImagesButton = QtWidgets.QPushButton("Flatten Images", self)
+        self.flattenImagesButton.move(325, 350)
+        setModuleButtonProperties(self.flattenImagesButton)
+
+        # Module FlattenImages Label
+        self.FlattenImagesLabel = QtWidgets.QLabel(self)
+        self.FlattenImagesLabel.move(545, 350)
+        setNotRunLabel(self.FlattenImagesLabel)
+
+        # Module AreaPercent Button
+        self.sortImagesButton = QtWidgets.QPushButton("Sort Images Top 3", self)
+        self.sortImagesButton.move(625, 350)
+        setModuleButtonProperties(self.sortImagesButton)
+
+        # Module AreaPercent Label
+        self.sortImagesLabel = QtWidgets.QLabel(self)
+        self.sortImagesLabel.move(845, 350)
+        setNotRunLabel(self.sortImagesLabel)
 
         # Module 4 Button
         self.plotButton = QtWidgets.QPushButton("Module 4 - Plot On Map", self)
@@ -101,27 +132,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # Module 4 Label
         self.plotLabel = QtWidgets.QLabel(self)
         self.plotLabel.move(240, 400)
-        setNotRunLabel(self.plotLabel)
-
-        # Module AreaPercent Button
-        self.mb5 = QtWidgets.QPushButton("ID Degree of Damage", self)
-        self.mb5.move(450, 250)
-        setModuleButtonProperties(self.mb5)
-
-        # Module AreaPercent Label
-        self.mscs = QtWidgets.QLabel(self)
-        self.mscs.move(670, 250)
-        setNotRunLabel(self.mscs)
-
-        # Module 1 Button
-        self.idSigChangesButton = QtWidgets.QPushButton("ID Signif Changes", self)
-        self.idSigChangesButton.move(450, 400)
-        setModuleButtonProperties(self.idSigChangesButton)
-
-        # Module 1 Label
-        self.idSigChangesLabel = QtWidgets.QLabel(self)
-        setNotRunLabel(self.idSigChangesLabel)
-        self.idSigChangesLabel.move(670, 400)
+        self.plotLabel.resize(400, 50)
+        self.plotLabel.setStyleSheet('color: red')
+        self.plotLabel.setText("Not Run (also requires ID Signif Changes to be completed)")
 
     # fetches the director from the user and updates the program accordingly
     def getDirectory(self):
@@ -142,31 +155,52 @@ class MainWindow(QtWidgets.QMainWindow):
     # The main loop that is in charge of periodically checking the status of the json files and updating the interface accordingly
     # I know its not safe to change these buttons from a thread but I don't want to dive into signals right now
     def mainBGloop(self):
-        if os.path.isfile(jsondir + "autofilter.json") and self.unlockedAutoFilterButton == False:
+        if os.path.isfile(autoFilterOutputPath) and not self.manualfilterButton.isEnabled():
             self.manualfilterButton.setEnabled(True)  # Manual Filter Button unlock
-            self.unlockedAutoFilterButton = True
             updateTextCompletedGreen(self.autofilterLabel)
 
-        if os.path.isfile(jsondir + "manualfilter.json") and self.unlockedManualFilterButton == False:
+        if os.path.isfile(manualFilterOutputPath) and not self.locateIRButton.isEnabled():
             self.locateIRButton.setEnabled(True)  # Locate IR Button unlock
-            self.unlockedManualFilterButton = True
             updateTextCompletedGreen(self.manualFilterLabel)
 
-        threading.Timer(1.0, self.mainBGloop).start()
+        if os.path.isfile(irLocateOutputPath) and not self.flattenImagesButton.isEnabled():
+            self.flattenImagesButton.setEnabled(True) # Flatten Image
+            updateTextCompletedGreen(self.manualFilterLabel)
+
+        if os.path.isfile(irLocateOutputPath) and os.path.isfile(idSigChangesOutputPath) and not self.plotButton.isEnabled():
+            self.plotButton.setEnabled(True)  # Plot Button unlock
+            updateTextCompletedGreen(self.manualFilterLabel)
+
+        if not self.exitRequested:
+            threading.Timer(1.0, self.mainBGloop).start()
+
+    # Clean up before closing program
+    def exitProgram(self):
+        self.exitRequested = True
+        sys.exit(0)
 
     # Launches the auto filter module and pipes the output into the current terminal
     def launchAutoFilterModule(self):
-        print("\n\n\n\n\n\n=== Module 1 AutoFilter Output ===")
-        os.system("python3 ../filter-module/detect.py -i " + self.dir + " -f ./tmp/json/autofilter.json")
-        print("=== Output End ===\n\n\n\n\n\n")
-        runningDialog()
+        runModule("Module 1 Auto Filtering",
+                  "python3 ../filter-module/detect.py -i " + self.dir + " -f " + autoFilterOutputPath)
 
     # Launches the manual filter module and pipes the output into the current terminal
     def launchManualFilterModule(self):
-        print("\n\n\n\n\n\n=== Module 2 Manual Filtering output ===")
-        os.system("python3 ../gui_broken_panel_filter/gui_sorter_working.py --from ./tmp/json/autofilter.json --to ./tmp/json/manualfilter.json")
-        print("=== Output End ===\n\n\n\n\n\n")
-        runningDialog()
+        runModule("Module 2 Manual Filtering",
+                  "python3 ../gui_broken_panel_filter/gui_sorter_working.py --from " + autoFilterOutputPath + " --to " + manualFilterOutputPath)
+
+    # Launches the IR location module and pipes the output into the current terminal
+    def launchLocateIRModule(self):
+        runModule("Module 3 Locate IR",
+                  "python3 ../mark-damaged-module/markergui.py -i " + manualFilterOutputPath + " -o " + irLocateOutputPath)
+
+
+# Runs a module and pipes the output to the current terminal
+def runModule(title, cmd):
+    runningDialog()
+    print("\n\n\n\n\n\n=== " + title + " ===")
+    os.system(cmd)
+    print("=== Output End ===\n\n\n\n\n\n")
 
 # Given a QWidgetLabel, sets the label to not run
 def setNotRunLabel(l):
