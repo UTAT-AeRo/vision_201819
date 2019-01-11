@@ -86,4 +86,4 @@ if output_dir is not None and not os.path.exists(output_dir):
 # Get output positive images
 pos_images = run(input_dir, output_dir)
 with open(output_file, 'w', encoding='utf8') as outfile:
-    json.dump(pos_images, outfile)
+    json.dump({"positive": pos_images}, outfile)
