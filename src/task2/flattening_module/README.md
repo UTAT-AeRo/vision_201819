@@ -16,15 +16,22 @@ Example Call
 ```python flattener.py --input test.json --output test_folder```
 
 
-### Input Json format
+### Input Json format 1
 ```
 {
     "../../task1/common/test/2018-05-25_16-22-29-018.bmp": [[408, 304], [596, 302], [619, 158], [472, 188], [874, 256], [738, 392]],
-    "../../task1/common/test/2018-05-25_16-22-29-685.bmp": []
+    "../../task1/common/test/2018-05-25_16-22-29-685.bmp": [121, 312]
 }
 ```
 
-Or any other dictionary with keys that are paths to images containing panels.
+### Input Json format 2
+```
+[
+    "../../task1/common/test/2018-05-25_16-22-29-018.bmp",
+    "../../task1/common/test/2018-05-25_16-22-29-685.bmp"
+]
+```
+
 
 ### Output Json
 

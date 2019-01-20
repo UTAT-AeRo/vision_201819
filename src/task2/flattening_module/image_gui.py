@@ -8,11 +8,13 @@ import os
 
 MOVE_SPEED = 10
 
+
 class Image_GUI:
     """This class represents an the image processing application
 
     ==== Properties ===
-    save_to: the path to which the images will be saved
+    save_to: the path to which the images will be saved.
+    curr_path: the path of the image currently loaded.
     """
     # === Private Attributes ===
     _save_to: str  # the path to which the images will be saved
@@ -21,10 +23,10 @@ class Image_GUI:
     _final_cv_img: np.ndarray  # The final image to be saved in the form of
     # a np.array
     _paths: List[str]  # A list of all images to be loaded
-    # im_on_canvas: the id of the image on the canvas TODO
+    __im_on_canvas: int  # the id of the image on the canvas
 
     __tk_image: PhotoImage  # the image currently being displayed on the screen.
-    __img_counter: int  # _img_counter: Index of current image in paths being
+    __img_counter: int  # __img_counter: Index of current image in paths being
     # used.
     __x_slider: Scrollbar
     __y_slider: Scrollbar
@@ -68,14 +70,25 @@ class Image_GUI:
         self._final_cv_img = cv2.imread(paths[0])
         self.__tk_image = self.cv2tk_image(self._final_cv_img)
 
-        self.im_on_canvas = self._canvas.create_image(0, 0, image=self.__tk_image,
-                                                      anchor="nw",
-                                                      tags='canvas_image')
-        print("type of im on canvas", type(self.im_on_canvas))
+        self.__im_on_canvas = self._canvas.create_image(0, 0, image=self.__tk_image,
+                                                        anchor="nw",
+                                                        tags='canvas_image')
+        self.reload()
+
+
 
     @property
     def save_to(self):
         return self._save_to
+
+    @property
+    def curr_path(self):
+        return self._paths[self.__img_counter]
+
+    def reload(self):
+        """reload the current image from the path"""
+        self._final_cv_img = cv2.imread(self.curr_path)
+        self.show_cv_image(self._final_cv_img)
 
     def _up(self):
         """called on up arrow press"""
@@ -99,10 +112,7 @@ class Image_GUI:
         """Takes a image in array fromat and sets the image on the canvas
         to it"""
         new_tkimage = self.cv2tk_image(cv_img)
-        self._canvas.create_image(0, 0, image=self.__tk_image,
-                                  anchor="nw",
-                                  tags='canvas_image')
-        self._canvas.itemconfig(self.im_on_canvas, image=new_tkimage)
+        self._canvas.itemconfig(self.__im_on_canvas, image=new_tkimage)
         self.__tk_image = new_tkimage
 
     def to_canvas(self, point: Tuple[float, float]) -> Tuple[int, int]:
@@ -112,11 +122,14 @@ class Image_GUI:
 
     def save_img_to_folder_with_extra(self, extra: str) -> str:
         """Save the final_cv_img to the save_to folder
-        with <extra> added to its name"""
+        with <extra> added to its name
+
+        :returns the path to which the file was saved
+        """
         if not os.path.exists(self._save_to):
             os.makedirs(self._save_to)
 
-        name = os.path.basename(self._paths[self.__img_counter])
+        name = os.path.basename(self.curr_path)
 
         slit = name.split('.')
 
@@ -141,11 +154,6 @@ class Image_GUI:
             self.reload()
         else:
             self._master.destroy()
-
-    def reload(self):
-        """reload the current image from the path"""
-        self._final_cv_img = cv2.imread(self._paths[self.__img_counter])
-        self.show_cv_image(self._final_cv_img)
 
     def reset_scroll(self):
         self._canvas.config(xscrollcommand=self.__x_slider.set)
