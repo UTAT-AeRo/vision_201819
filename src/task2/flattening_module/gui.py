@@ -2,7 +2,7 @@ from tkinter import *
 from typing import Tuple, List, Dict
 import nPTransform
 import numpy as np
-from image_gui import Image_GUI
+from imagegui import ImageGUI
 import argparse
 import os
 import json
@@ -13,7 +13,7 @@ PANEL_MARKER_COLOUR = 'blue'
 CORNER_COLOUR = 'red'
 DOT_TAG = 'dots'
 
-class ImageFlattener(Image_GUI):
+class ImageFlattener(ImageGUI):
     """This class represents an the image processing application
         *** This class assumes the solar panels are rectangles ***
 
@@ -64,7 +64,7 @@ class ImageFlattener(Image_GUI):
         next_button.pack(side=LEFT, padx=2, pady=2)
         toolbar.pack(side=TOP, fill=X)
 
-        Image_GUI.__init__(self, master, list(panels_in.keys()), save_to)
+        ImageGUI.__init__(self, master, list(panels_in.keys()), save_to)
 
         self._canvas.bind('<Button-1>', self.left_mouse_down)
 
@@ -82,7 +82,7 @@ class ImageFlattener(Image_GUI):
         if self._img_flattened:
             return
 
-        x, y = self.to_canvas((event.x, event.y))
+        x, y = self.win_to_canvas((event.x, event.y))
         self._make_dot(CORNER_COLOUR, (x, y))
 
         # add tuple (x, y) to existing list
@@ -95,7 +95,7 @@ class ImageFlattener(Image_GUI):
     def _make_dot(self, colour: str, pos: Tuple[int, int]):
         """
         :param colour: the colour of the fill must be either 'red' or 'blue'
-        :param pos: the x, y cords to place the dote on the screen
+        :param pos: the x, y cords to place the dot on the canvas
         """
         self._canvas.create_oval(pos[0] - DOT_SIZE, pos[1] - DOT_SIZE,
                                  pos[0] + DOT_SIZE, pos[1] + DOT_SIZE,
@@ -108,8 +108,8 @@ class ImageFlattener(Image_GUI):
         len(self._clicks) == 4
         """
         assert len(self.__clicks) == 4
-        rect = np.asarray([np.asarray(np.float32(p)) for p in
-                           self.__clicks])
+        rect = np.asarray([np.asarray(np.float32(self.canvas_to_final_cv(p)))
+                           for p in self.__clicks])
 
         flat = nPTransform.four_points_correct_aspect(self._final_cv_img,
                                                       rect,
@@ -118,23 +118,23 @@ class ImageFlattener(Image_GUI):
 
         self._canvas.delete(DOT_TAG)
 
-        self.show_cv_image(flat)
-        self.final_cv_img = flat
+        self._final_cv_img = flat
+        self.refresh()
 
-        self._canvas.xview_moveto(0)
-        self._canvas.yview_moveto(0)
+        self.reset_scroll()
 
         self.__clicks = []
 
     def reload(self):
         """Overrides because we need to reset img_flattened, add panel markers
         and remove dots"""
+        ImageGUI.reload(self)
         self._img_flattened = False
         self.__clicks = []
         self._canvas.delete(DOT_TAG)
         for panel_point in self.__panels_in[self.curr_path]:
-            self._make_dot(PANEL_MARKER_COLOUR, panel_point)
-        Image_GUI.reload(self)
+            self._make_dot(PANEL_MARKER_COLOUR,
+                           self.final_cv_to_canvas(panel_point))
 
     def next_file(self):
         """Runs when next button pressed saves image to save_to with prefix
@@ -261,8 +261,6 @@ if __name__ == '__main__':
         images_input = json.load(input_json)
 
     panels_in = _parse_input(images_input)
-
-    print(panels_in)
 
     flattener = ImageFlattener(master, panels_in, arg.output)
 
