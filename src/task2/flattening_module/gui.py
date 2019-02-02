@@ -2,7 +2,7 @@ from tkinter import *
 from typing import Tuple, List, Dict
 import nPTransform
 import numpy as np
-from imagegui import ImageGUI
+from imageprocessor import ImageProcessor, JsonFormatError
 import argparse
 import os
 import json
@@ -13,7 +13,8 @@ PANEL_MARKER_COLOUR = 'blue'
 CORNER_COLOUR = 'red'
 DOT_TAG = 'dots'
 
-class ImageFlattener(ImageGUI):
+
+class ImageFlattener(ImageProcessor):
     """This class represents an the image processing application
         *** This class assumes the solar panels are rectangles ***
 
@@ -64,9 +65,10 @@ class ImageFlattener(ImageGUI):
         next_button.pack(side=LEFT, padx=2, pady=2)
         toolbar.pack(side=TOP, fill=X)
 
-        ImageGUI.__init__(self, master, list(panels_in.keys()), save_to)
+        ImageProcessor.__init__(self, master, list(panels_in.keys()), save_to)
 
-        self._canvas.bind('<Button-1>', self.left_mouse_down)
+        self.movable_image.canvas.bind('<Button-1>', self.left_mouse_down)
+        self._master.after(200, self.reload)
 
     @property
     def saved(self) -> Dict[str, Tuple[int, int]]:
@@ -82,8 +84,8 @@ class ImageFlattener(ImageGUI):
         if self._img_flattened:
             return
 
-        x, y = self.win_to_canvas((event.x, event.y))
-        self._make_dot(CORNER_COLOUR, (x, y))
+        x, y = self.movable_image.win_to_canvas((event.x, event.y))
+        self.movable_image.make_dot(CORNER_COLOUR, (x, y), DOT_SIZE)
 
         # add tuple (x, y) to existing list
         self.__clicks.append((x, y))
@@ -92,15 +94,6 @@ class ImageFlattener(ImageGUI):
             self._img_flattened = True
             self._request_dims()
 
-    def _make_dot(self, colour: str, pos: Tuple[int, int]):
-        """
-        :param colour: the colour of the fill must be either 'red' or 'blue'
-        :param pos: the x, y cords to place the dot on the canvas
-        """
-        self._canvas.create_oval(pos[0] - DOT_SIZE, pos[1] - DOT_SIZE,
-                                 pos[0] + DOT_SIZE, pos[1] + DOT_SIZE,
-                                 fill=colour, width=1, tags=DOT_TAG)
-
     def _flatten_img(self):
         """flatten the current img
 
@@ -108,33 +101,37 @@ class ImageFlattener(ImageGUI):
         len(self._clicks) == 4
         """
         assert len(self.__clicks) == 4
-        rect = np.asarray([np.asarray(np.float32(self.canvas_to_final_cv(p)))
+        # convert clicks to an np array
+        rect = np.asarray([np.asarray(
+                           np.float32(
+                           self.movable_image.canvas_to_cv(p)))
                            for p in self.__clicks])
 
-        flat = nPTransform.four_points_correct_aspect(self._final_cv_img,
+        flat = nPTransform.four_points_correct_aspect(self.movable_image.cv_img,
                                                       rect,
                                                       self.dim[0],
                                                       self.dim[1])
 
-        self._canvas.delete(DOT_TAG)
-
-        self._final_cv_img = flat
-        self.refresh()
-
-        self.reset_scroll()
+        self.movable_image.cv_img = flat
+        self.movable_image.reset()
+        self.movable_image.clear_dots()
 
         self.__clicks = []
+
+    def _make_panel_dots(self):
+        """place dots that mark panels onto screen"""
+        for panel_point in self.__panels_in[self.curr_path]:
+            self.movable_image.make_dot(PANEL_MARKER_COLOUR,
+                                        self.movable_image.cv_to_canvas(panel_point),
+                                        DOT_SIZE)
 
     def reload(self):
         """Overrides because we need to reset img_flattened, add panel markers
         and remove dots"""
-        ImageGUI.reload(self)
+        ImageProcessor.reload(self)
         self._img_flattened = False
         self.__clicks = []
-        self._canvas.delete(DOT_TAG)
-        for panel_point in self.__panels_in[self.curr_path]:
-            self._make_dot(PANEL_MARKER_COLOUR,
-                           self.final_cv_to_canvas(panel_point))
+        self._make_panel_dots()
 
     def next_file(self):
         """Runs when next button pressed saves image to save_to with prefix
@@ -202,15 +199,6 @@ class ImageFlattener(ImageGUI):
             skip_button.pack(side=LEFT)
 
         pop.mainloop()
-
-
-class JsonFormatError(Exception):
-    def __init__(self, explanation: str = ''):
-        self.__init__()
-        self.explanation = explanation
-
-    def __str__(self):
-        return self.explanation
 
 
 def _parse_input(images_input: any) -> Dict[str, List[Tuple[int, int]]]:

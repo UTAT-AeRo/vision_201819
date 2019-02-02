@@ -5,27 +5,23 @@ from typing import Tuple, List, Dict
 import numpy as np
 import os
 
-
 MOVE_SPEED = 1
 ZOOM_SPEED = 1.1
 CV_CROP_BUFFER = 5
 IMG_OVERFILL = 2
+DOT_TAG = 'dot_tag'
 
-class ImageGUI:
-    """This class represents an the image processing application
+class MovableImage:
+    """This holds a canvas with an image that can be zoomed and moved.
 
     ==== Properties ===
-    save_to: the path to which the images will be saved.
-    curr_path: the path of the image currently loaded.
+    canvas: the canvas that the images is on should work like any other canvas
+    do not call remove all.
     """
     # === Private Attributes ===
-    _save_to: str  # the path to which the images will be saved
     _master: Tk  # the root of the gui
     _canvas: Canvas  # the canvas containing the image being edited
-    _final_cv_img: np.ndarray  # The final image to be saved in the form of
-    # a np.array
-    _paths: List[str]  # A list of all images to be loaded
-    _im_scale: float  # the scale of the image on the screen
+    _cv_img: np.ndarray  # the internal cv image.
 
     __photo_frame: Frame # the frame the canvas sits on.
     __im_on_canvas: int  # the id of the image on the canvas
@@ -34,22 +30,19 @@ class ImageGUI:
     # used.
     __x_slider: Scrollbar
     __y_slider: Scrollbar
-    # === Representation Invariants ===
-    # __tk_image must be _im_scale larger than _final_cv_image
+    _scroll_speed: float  # how fast to move the scroll bars when the arrow keys are pressed
+    _zoom_speed: float  # how much bigger to make the image for every click of the scroll wheel
+    __win_dims: Tuple[float, float]
 
-    def __init__(self, master: Tk, paths: List[str], save_to: str):
+    def __init__(self, master: Tk, zoom_speed: float=ZOOM_SPEED, move_speed: float=MOVE_SPEED):
         """
         :param master: The root for this Tk window
-        :param paths: Path of the first image to be loaded
-        :param save_to: the path to which the images will be saved
 
         Precondition: Paths is not paths is not empty.
         """
         self._master = master
-        self._paths = paths
-        self.__img_counter = 0
-        self._save_to = save_to
-        self._im_scale = 1.0
+        self._scroll_speed = min(move_speed, 0)
+        self._zoom_speed = min(zoom_speed, 1)
 
         # Create image frame and canvas
         self.__photo_frame = Frame(self._master, bd=2, relief=SUNKEN)
@@ -68,19 +61,12 @@ class ImageGUI:
         self._canvas.config(scrollregion=self._canvas.bbox("all"))
 
         # Place image
-
         self.__x_slider.grid(row=1, column=0, sticky=E + W)
         self.__y_slider.grid(row=0, column=1, sticky=N + S)
         self._canvas.grid(row=0, column=0, sticky=N + S + E + W)
         self.__photo_frame.pack(fill=BOTH, expand=1)
 
-        self._final_cv_img = cv2.imread(self.curr_path)
-        self.__tk_image = ImageTk.PhotoImage(Image.open(paths[0]))
-
-        self.__im_on_canvas = self._canvas.create_image(0, 0,
-                                                        image=self.__tk_image,
-                                                        anchor="nw",
-                                                        tags='canvas_image')
+        print('frame size', self.__photo_frame.grid_size())
 
         # set focus to canvas when left you left click
         self._canvas.focus_set()
@@ -97,15 +83,19 @@ class ImageGUI:
         self._canvas.bind('<Button-5>',   self.wheel)  # only with Linux, wheel scroll down
         self._canvas.bind('<Button-4>',   self.wheel)  # only with Linux, wheel scroll up
 
+        self.__win_dims = (self.__photo_frame.winfo_height(), self.__photo_frame.winfo_width())
+        print(self.__win_dims)
         self._set_up_image()
-        self._master.after(200, self.reload)
+        self.cv_img = np.zeros((100, 100, 3), np.uint8)
+        self._master.after(200, self.reset)
 
     def _set_up_image(self):
         """Loads image from curr path and sets up tracking corners"""
-        h = int(self.__photo_frame.winfo_height())
-        w = int(self.__photo_frame.winfo_width())
         self._canvas.delete('corners')
-        cBR = self.win_to_canvas((w, h))
+        self.__win_dims = (self.__photo_frame.winfo_height(),
+                           self.__photo_frame.winfo_width())
+        print(self.__win_dims)
+        cBR = self.win_to_canvas(self.__win_dims)
         self.__im_bot_right = self._canvas.create_oval((cBR[0],
                                                         cBR[0],
                                                         cBR[1],
@@ -122,6 +112,27 @@ class ImageGUI:
                                                       fill='green',
                                                       state=HIDDEN)
 
+    @property
+    def canvas(self):
+        return self._canvas
+
+    @property
+    def cv_img(self):
+        return self._cv_img
+
+    @cv_img.setter
+    def cv_img(self, cv_img: np.ndarray):
+        """Sets the current image from an np.ndarray"""
+        self._cv_img = cv_img
+
+        self.__tk_image = ImageTk.PhotoImage(Image.fromarray(cv_img))
+
+        self.__im_on_canvas = self._canvas.create_image(0, 0,
+                                                        image=self.__tk_image,
+                                                        anchor="nw",
+                                                        tags='canvas_image')
+        self.refresh()
+
     def scroll(self, delta: Tuple[int, int]):
         """Scroll canvas by delta"""
         self._canvas.xview_scroll(delta[0],
@@ -130,35 +141,36 @@ class ImageGUI:
                                   "units")
         self.refresh()
 
-    @property
-    def save_to(self):
-        return self._save_to
-
-    @property
-    def curr_path(self):
-        return self._paths[self.__img_counter]
-
     def wheel(self, event):
         # https://stackoverflow.com/questions/25787523/move-and-zoom-a-tkinter-canvas-with-mouse/48069295#48069295
         scale = 1.0
         if event.num == 5 or event.delta == -120:
             scale *= ZOOM_SPEED
-            self._im_scale *= ZOOM_SPEED
         elif event.num == 4 or event.delta == 120:
             scale /= ZOOM_SPEED
-            self._im_scale /= ZOOM_SPEED
 
         x = self._canvas.canvasx(event.x)
         y = self._canvas.canvasy(event.y)
         self._canvas.scale('all', x, y, scale, scale)
         self.refresh()
 
-    def reload(self):
-        """reload the current image from the path and reset the image scale"""
-        self._final_cv_img = cv2.imread(self.curr_path)
+    def clear_dots(self):
+        """removes all dots made with make dot"""
+        self.canvas.delete(DOT_TAG)
+
+    def reset(self):
+        """reset the image scale and position"""
         self.reset_scroll()
         self._set_up_image()
         self.refresh()
+
+    def set_from_path(self, path: str):
+        """Sets the current image from a path if image is not found or fails to
+        load will raise a FileNotFoundError"""
+        temp = cv2.imread(path)
+        if temp.size == 0:
+            raise FileNotFoundError("open cv2 failed to load this file")
+        self.cv_img = temp
 
     def refresh(self):
         """ Updates the image on the canvas from the final cv_image. Should be
@@ -166,10 +178,10 @@ class ImageGUI:
         """
         win_dims = (self.__photo_frame.winfo_width(),
                     self.__photo_frame.winfo_height())
-        tl_fcv = self.win_to_final_cv((0, 0))
-        br_fcv = self.win_to_final_cv(win_dims)
+        tl_fcv = self.win_to_cv((0, 0))
+        br_fcv = self.win_to_cv(win_dims)
 
-        h, w, _ = self._final_cv_img.shape
+        h, w, _ = self._cv_img.shape
 
         tl_fcv = (min(max(CV_CROP_BUFFER, tl_fcv[0]), w - CV_CROP_BUFFER),
                   min(max(CV_CROP_BUFFER, tl_fcv[1]), h - CV_CROP_BUFFER))
@@ -179,7 +191,7 @@ class ImageGUI:
                   max(min(h - CV_CROP_BUFFER, br_fcv[1]),
                       tl_fcv[1] + CV_CROP_BUFFER))
 
-        cropped_cv_img = self._final_cv_img[tl_fcv[1]: br_fcv[1], tl_fcv[0]: br_fcv[0]]
+        cropped_cv_img = self._cv_img[tl_fcv[1]: br_fcv[1], tl_fcv[0]: br_fcv[0]]
 
         b, g, r = cv2.split(cropped_cv_img)
         swiched_cv_img = cv2.merge((r, g, b))
@@ -189,16 +201,16 @@ class ImageGUI:
         br_win = self.final_cv_to_win(br_fcv)
 
         new_width = min(max(br_win[0] - tl_win[0], 1),
-                        int(win_dims[0] * IMG_OVERFILL))
+                        int(win_dims[0]))
         new_hight = min(max(br_win[1] - tl_win[1], 1),
-                        int(win_dims[1] * IMG_OVERFILL))
+                        int(win_dims[1]))
 
         resized_im = im.resize((new_width, new_hight))
 
         new_tkimage = ImageTk.PhotoImage(resized_im)
 
         self._canvas.itemconfig(self.__im_on_canvas, image=new_tkimage)
-        tl_canvas = self.final_cv_to_canvas(tl_fcv)
+        tl_canvas = self.cv_to_canvas(tl_fcv)
         self._canvas.coords(self.__im_on_canvas, list(tl_canvas))
         self.__tk_image = new_tkimage
 
@@ -214,16 +226,16 @@ class ImageGUI:
 
         return int(point[0] - x0), int(point[1] - y0)
 
-    def canvas_to_final_cv(self, point: Tuple[float, float]) -> Tuple[int, int]:
-        """Takes a point on the canvas and converts it to the final_cv_image
+    def canvas_to_cv(self, point: Tuple[float, float]) -> Tuple[int, int]:
+        """Takes a point on the canvas and converts it to the cv_img
         cords"""
         bounds = self._get_im_bounds()
         scale = self._get_scale()
         return (int((point[0] - bounds[0]) / scale[0]),
                 int((point[1] - bounds[1]) / scale[1]))
 
-    def final_cv_to_canvas(self, point: Tuple[float, float]) -> Tuple[int, int]:
-        """Takes a point on the canvas and converts it to the final_cv_image
+    def cv_to_canvas(self, point: Tuple[float, float]) -> Tuple[int, int]:
+        """Takes a point on the canvas and converts it to the cv_img
         cords"""
         bounds = self._get_im_bounds()
         scale = self._get_scale()
@@ -231,21 +243,21 @@ class ImageGUI:
                         int((point[1] * scale[1]) + bounds[1]))
         return canvas_point
 
-    def win_to_final_cv(self, point: Tuple[float, float]) -> Tuple[int, int]:
-        """Takes a point in the window and converts it to final_cv_image space.
+    def win_to_cv(self, point: Tuple[float, float]) -> Tuple[int, int]:
+        """Takes a point in the window and converts it to cv_img space.
         """
         canvas_point = self.win_to_canvas(point)
-        return self.canvas_to_final_cv(canvas_point)
+        return self.canvas_to_cv(canvas_point)
 
     def final_cv_to_win(self, point: Tuple[float, float]) -> Tuple[int, int]:
-        """Takes a point on the final_cv_image and converts a point on the window.
+        """Takes a point on the cv_img and converts a point on the window.
         """
-        canvas_point = self.final_cv_to_canvas(point)
+        canvas_point = self.cv_to_canvas(point)
         return self.canvas_to_win(canvas_point)
 
     def _get_scale(self) -> Tuple[int, int]:
         bounds = self._get_im_bounds()
-        h, w, _ = self._final_cv_img.shape
+        h, w, _ = self._cv_img.shape
         x_scale = (bounds[2] - bounds[0])/w
         y_scale = (bounds[3] - bounds[1])/h
         return x_scale, y_scale
@@ -256,42 +268,24 @@ class ImageGUI:
         center = self._canvas.coords(self.__im_bot_right)
         return tuple(top_left[:2] + center[:2])
 
-    def save_img_to_folder_with_extra(self, extra: str) -> str:
-        """Save the final_cv_img to the save_to folder
-        with <extra> added to its name
-
-        :returns the path to which the file was saved
-        """
-        if not os.path.exists(self._save_to):
-            os.makedirs(self._save_to)
-
-        name = os.path.basename(self.curr_path)
-
-        slit = name.split('.')
-
-        if len(slit) > 1:
-            sections = slit[:-1]
-            extension = slit[-1]
-            path = os.path.join(self._save_to, '.'.join(sections) + extra + '.'
-                                + extension)
-            cv2.imwrite(path, self._final_cv_img)
-        else:
-            path = os.path.join(self._save_to, name + extra)
-            cv2.imwrite(path, self._final_cv_img)
-
-        return path
-
-    def load_next_img_or_end(self):
-        """Loads next image from paths if there are no more images to load
-        it ends the main loop.
-        """
-        if self.__img_counter < len(self._paths) - 1:
-            self.__img_counter += 1
-            self.reload()
-        else:
-            self._master.destroy()
-
     def reset_scroll(self):
         """Reset scroll position"""
         self._canvas.xview_moveto(0)
         self._canvas.yview_moveto(0)
+
+    def make_dot(self, colour: str, pos: Tuple[int, int], dot_size: int):
+        """
+        :param colour: the colour of the fill must a valid tkinter color
+        :param pos: the x, y cords to place the dot on the canvas
+        :param dot_size: the size of the dot in px's
+        """
+        self.canvas.create_oval(pos[0] - dot_size, pos[1] - dot_size,
+                                pos[0] + dot_size, pos[1] + dot_size,
+                                fill=colour, width=1, tags=DOT_TAG)
+
+
+if __name__ == '__main__':
+    tk = Tk()
+    mimg = MovableImage(tk)
+    mimg.set_from_path("../Sample_Images/solar.jpg")
+    tk.mainloop()
