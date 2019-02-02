@@ -17,7 +17,11 @@ class MovableImage:
     ==== Properties ===
     canvas: the canvas that the images is on should work like any other canvas
     do not call remove all.
+    cv_img: the internal cv image.
+    fit_to_frame: boolean fit to the frame (default false). This should only be
+    set to two after the main loop runs.
     """
+    fit_to_frame: bool
     # === Private Attributes ===
     _master: Tk  # the root of the gui
     _canvas: Canvas  # the canvas containing the image being edited
@@ -40,6 +44,7 @@ class MovableImage:
 
         Precondition: Paths is not paths is not empty.
         """
+        self.fit_to_frame = False
         self._master = master
         self._scroll_speed = min(move_speed, 0)
         self._zoom_speed = min(zoom_speed, 1)
@@ -66,12 +71,6 @@ class MovableImage:
         self._canvas.grid(row=0, column=0, sticky=N + S + E + W)
         self.__photo_frame.pack(fill=BOTH, expand=1)
 
-        print('frame size', self.__photo_frame.grid_size())
-
-        # set focus to canvas when left you left click
-        self._canvas.focus_set()
-        self._canvas.bind("<1>", lambda event: self._canvas.focus_set())
-
         # set up arrow key scrolling
         self._canvas.bind("<Left>", lambda event: self.scroll((-MOVE_SPEED, 0)))
         self._canvas.bind("<Right>", lambda event: self.scroll((MOVE_SPEED, 0)))
@@ -83,19 +82,29 @@ class MovableImage:
         self._canvas.bind('<Button-5>',   self.wheel)  # only with Linux, wheel scroll down
         self._canvas.bind('<Button-4>',   self.wheel)  # only with Linux, wheel scroll up
 
-        self.__win_dims = (self.__photo_frame.winfo_height(), self.__photo_frame.winfo_width())
-        print(self.__win_dims)
+        # set up refresh on resize
+        self._canvas.bind('<Configure>', lambda event: self.refresh)
+
+        self._cv_img = np.zeros((100, 100, 3), np.uint8)
         self._set_up_image()
-        self.cv_img = np.zeros((100, 100, 3), np.uint8)
-        self._master.after(200, self.reset)
+        self.cv_img = self._cv_img
+
+    def focus_set(self):
+        """Set the focuse on the canvas when called must be called before you
+        can interact with canvas"""
+        self._canvas.focus_set()
 
     def _set_up_image(self):
         """Loads image from curr path and sets up tracking corners"""
         self._canvas.delete('corners')
-        self.__win_dims = (self.__photo_frame.winfo_height(),
-                           self.__photo_frame.winfo_width())
-        print(self.__win_dims)
-        cBR = self.win_to_canvas(self.__win_dims)
+        if self.fit_to_frame:
+            dims = (self.__photo_frame.winfo_height(),
+                    self.__photo_frame.winfo_width())
+        else:
+            h, w, _ = self.cv_img.shape
+            dims = (h, w)
+
+        cBR = self.win_to_canvas(dims)
         self.__im_bot_right = self._canvas.create_oval((cBR[0],
                                                         cBR[0],
                                                         cBR[1],

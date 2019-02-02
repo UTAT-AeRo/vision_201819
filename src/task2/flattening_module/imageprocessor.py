@@ -33,6 +33,9 @@ class ImageProcessor:
         self._save_to = save_to
         self._movable_image = MovableImage(master)
         self.movable_image.set_from_path(self.curr_path)
+        self.movable_image.canvas.bind("<1>",
+                                       lambda event: self.movable_image.focus_set)
+        self.movable_image.focus_set()
 
     @property
     def save_to(self):
