@@ -5,11 +5,19 @@ allows the user to create a folder containing images of only the panel as if it
 were being viewed flat on.
 
 ### Usage
-The program takes two arguments
+```
+usage: imageflattener.py [-h] [--input INPUT] [--output OUTPUT]
+                         [--dot_size DOT_SIZE]
 
-```--input```: The path to the input json.
-```--output```: The path to the folder where the output json and all images will
-be saved
+Flatten a list of panels
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --input INPUT        The path to the jason contain
+  --output OUTPUT      The folder to save output json and new images
+  --dot_size DOT_SIZE  The size of the dots used to mark and select panel
+                       corners.
+```
 
 Example Call
 
@@ -17,7 +25,7 @@ Example Call
 
 
 ### Input Json format 1
-```
+```json
 {
     "../../task1/common/test/2018-05-25_16-22-29-018.bmp": [[408, 304], [596, 302], [619, 158], [472, 188], [874, 256], [738, 392]],
     "../../task1/common/test/2018-05-25_16-22-29-685.bmp": [121, 312]
@@ -25,7 +33,7 @@ Example Call
 ```
 
 ### Input Json format 2
-```
+```json
 [
     "../../task1/common/test/2018-05-25_16-22-29-018.bmp",
     "../../task1/common/test/2018-05-25_16-22-29-685.bmp"
@@ -35,7 +43,7 @@ Example Call
 
 ### Output Json
 
-```
+```json
 {
     "test/2018-05-25_16-22-29-018_flat.bmp": [123.0, 123.0],
     "test/2018-05-25_16-22-29-018_flat_1.bmp": [23.0, 123.0],

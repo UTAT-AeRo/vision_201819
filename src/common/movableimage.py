@@ -177,7 +177,7 @@ class MovableImage:
         """Sets the current image from a path if image is not found or fails to
         load will raise a FileNotFoundError"""
         temp = cv2.imread(path)
-        if temp.size == 0:
+        if temp is None or temp.size == 0:
             raise FileNotFoundError("open cv2 failed to load this file")
         self.cv_img = temp
 

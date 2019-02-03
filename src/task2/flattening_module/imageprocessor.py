@@ -2,7 +2,12 @@ from tkinter import *
 import cv2
 from typing import List
 import os
-from src.task1.common.movableimage import MovableImage
+import sys
+# import nonsense
+sys.path.insert(0, os.path.join(os.path.join(sys.path[0],
+                                os.path.join(os.pardir, os.pardir)),
+                                'common'))
+from movableimage import MovableImage
 
 
 class ImageProcessor:

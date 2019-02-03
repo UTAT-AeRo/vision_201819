@@ -240,8 +240,14 @@ if __name__ == '__main__':
                         help='The path to the jason contain')
     parser.add_argument('--output', type=str,
                         help='The folder to save output json and new images')
+    parser.add_argument('--dot_size', type=int,
+                        help='The size of the dots used to mark and select panel corners.',
+                        default=10
+                        )
 
     arg = parser.parse_args()
+
+    DOT_SIZE = arg.dot_size
 
     master = Tk()
 
