@@ -95,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Module 3 Button
         self.locateIRButton = QtWidgets.QPushButton("Module 3 - Locate IR Pts", self)
-        self.manualfilterButton.clicked.connect(self.launchLocateIRModule)
+        self.locateIRButton.clicked.connect(self.launchLocateIRModule)
         self.locateIRButton.move(25, 350)
         setModuleButtonProperties(self.locateIRButton)
 
@@ -127,6 +127,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Module 4 Button
         self.plotButton = QtWidgets.QPushButton("Module 4 - Plot On Map", self)
         self.plotButton.move(25, 400)
+        self.plotButton.clicked.connect(self.launchPlottingModule)
         setModuleButtonProperties(self.plotButton)
 
         # Module 4 Label
@@ -171,8 +172,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.plotButton.setEnabled(True)  # Plot Button unlock
             updateTextCompletedGreen(self.manualFilterLabel)
 
+        if True and not self.plotButton.isEnabled():  # DEBUG
+            self.plotButton.setEnabled(True)
+            updateTextCompletedGreen(self.manualFilterLabel)
+
         if not self.exitRequested:
-            threading.Timer(1.0, self.mainBGloop).start()
+            threading.Timer(0.5, self.mainBGloop).start()
 
     # Clean up before closing program
     def exitProgram(self):
@@ -193,6 +198,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def launchLocateIRModule(self):
         runModule("Module 3 Locate IR",
                   "python3 ../mark-damaged-module/markergui.py -i " + manualFilterOutputPath + " -o " + irLocateOutputPath)
+
+    # Launches the point plotting module
+    def launchPlottingModule(self):
+        runModule("Module 4 Plot points on map",
+                  "python3 ../plot_pois/plot_pois.py -im ../map/map_coordinates.json -id " + irLocateOutputPath + " -pi ../plot_pois/pinpoint.png -ps 1")
 
 
 # Runs a module and pipes the output to the current terminal
