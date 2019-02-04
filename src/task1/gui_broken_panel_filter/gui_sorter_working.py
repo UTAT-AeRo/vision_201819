@@ -66,9 +66,7 @@ photo_label.pack()
 # Function called when we get to the end of the list of images to go through.
 def end_program(final_data):
 	with open(json_out_name, 'w') as outfile:
-		outfile.write("{\"Positive\": ")
-		json.dump({"Positive": final_data}, outfile)
-		outfile.write("}")
+		json.dump({"positive": final_data}, outfile)
 	exit() 
 
 # Function called when "right swipped" (with the right arrow key)

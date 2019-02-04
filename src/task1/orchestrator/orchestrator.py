@@ -197,7 +197,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # Launches the IR location module and pipes the output into the current terminal
     def launchLocateIRModule(self):
         runModule("Module 3 Locate IR",
-                  "python3 ../mark-damaged-module/markergui.py -i " + manualFilterOutputPath + " -o " + irLocateOutputPath)
+                  "python3 ../mark-damaged-module/markergui.py -i " + manualFilterOutputPath + " -f " + irLocateOutputPath)
 
     # Launches the point plotting module
     def launchPlottingModule(self):
