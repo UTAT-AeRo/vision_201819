@@ -97,9 +97,4 @@ class ImageProcessor:
 
 
 class JsonFormatError(Exception):
-    def __init__(self, explanation: str = ''):
-        self.__init__()
-        self.explanation = explanation
-
-    def __str__(self):
-        return self.explanation
+    pass
