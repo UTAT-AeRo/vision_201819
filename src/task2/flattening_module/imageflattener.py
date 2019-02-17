@@ -137,13 +137,16 @@ class ImageFlattener(ImageProcessor):
         Precondition:
         len(self.__clicks) == 4
         """
-        bounds = Polygon(self.__clicks)
+        bounds = Polygon([self.movable_image.canvas_to_cv(click) for click
+                          in self.__clicks])
 
         panels_in_bounds = []
 
         for panels in self.__panels_in.values():
             for panel in panels:
                 p = Point(panel.pixel)
+                print(panel.pixel)
+                print(self.__clicks)
                 if p.within(bounds):
                     panels_in_bounds.append(panel)
 
