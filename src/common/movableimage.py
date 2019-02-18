@@ -202,21 +202,21 @@ class MovableImage:
 
         cropped_cv_img = self._cv_img[tl_fcv[1]: br_fcv[1], tl_fcv[0]: br_fcv[0]]
 
-        b, g, r = cv2.split(cropped_cv_img)
-        swiched_cv_img = cv2.merge((r, g, b))
-        im = Image.fromarray(swiched_cv_img)
 
         tl_win = self.final_cv_to_win(tl_fcv)
         br_win = self.final_cv_to_win(br_fcv)
 
         new_width = min(max(br_win[0] - tl_win[0], 1),
                         int(win_dims[0]))
-        new_hight = min(max(br_win[1] - tl_win[1], 1),
+        new_hieght = min(max(br_win[1] - tl_win[1], 1),
                         int(win_dims[1]))
 
-        resized_im = im.resize((new_width, new_hight))
+        resized_cv_img = cv2.resize(cropped_cv_img, (new_width, new_hieght))
 
-        new_tkimage = ImageTk.PhotoImage(resized_im)
+        b, g, r = cv2.split(resized_cv_img)
+        switched_cv_img = cv2.merge((r, g, b))
+
+        new_tkimage = ImageTk.PhotoImage(Image.fromarray(switched_cv_img))
 
         self._canvas.itemconfig(self.__im_on_canvas, image=new_tkimage)
         tl_canvas = self.cv_to_canvas(tl_fcv)
