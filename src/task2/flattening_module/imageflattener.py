@@ -21,11 +21,16 @@ class Panel:
     pixel: Tuple[int, int]
     dims: Tuple[int, int]
     path: str
+
     def __init__(self, gps, pixel):
         self.gps = gps
         self.pixel = pixel
         self.dims = None
         self.path = None
+
+    def __eq__(self, other):
+        return self.pixel == other.pixel \
+               and self.gps == other.gps
 
 
 class ImageFlattener(ImageProcessor):
@@ -142,13 +147,12 @@ class ImageFlattener(ImageProcessor):
 
         panels_in_bounds = []
 
-        for panels in self.__panels_in.values():
-            for panel in panels:
-                p = Point(panel.pixel)
-                print(panel.pixel)
-                print(self.__clicks)
-                if p.within(bounds):
-                    panels_in_bounds.append(panel)
+        for panel in self.__panels_in[self.curr_path]:
+            p = Point(panel.pixel)
+            print(panel.pixel)
+            print(self.__clicks)
+            if p.within(bounds):
+                panels_in_bounds.append(panel)
 
         if panels_in_bounds == []:
             return Panel(None, None)
