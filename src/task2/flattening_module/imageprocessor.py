@@ -65,11 +65,11 @@ class ImageProcessor:
 
         name = os.path.basename(self.curr_path)
 
-        slit = name.split('.')
+        split = name.split('.')
 
-        if len(slit) > 1:
-            sections = slit[:-1]
-            extension = slit[-1]
+        if len(split) > 1:
+            sections = split[:-1]
+            extension = split[-1]
             path = os.path.join(self._save_to, '.'.join(sections) + extra + '.'
                                 + extension)
             cv2.imwrite(path, self.movable_image.cv_img)

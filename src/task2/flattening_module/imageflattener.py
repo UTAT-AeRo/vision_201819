@@ -169,9 +169,10 @@ class ImageFlattener(ImageProcessor):
     def _make_panel_dots(self):
         """place dots that mark panels onto screen"""
         for panel in self.__panels_in[self.curr_path]:
-            self.movable_image.make_dot(PANEL_MARKER_COLOUR,
-                                        self.movable_image.cv_to_canvas(panel.pixel),
-                                        DOT_SIZE)
+            if panel not in self.saved:
+                self.movable_image.make_dot(PANEL_MARKER_COLOUR,
+                                            self.movable_image.cv_to_canvas(panel.pixel),
+                                            DOT_SIZE)
 
     def reload(self):
         """Overrides because we need to reset img_flattened, add panel markers
@@ -191,14 +192,13 @@ class ImageFlattener(ImageProcessor):
     def save(self):
         """Save the current image"""
         if self.__selected_panel is not None:
-            if len(self.saved) > 0:
+            if self.__num_saved > 0:
                 path = self.save_img_to_folder_with_extra(
                     f'_flat_{self.__num_saved}')
             else:
                 path = self.save_img_to_folder_with_extra(f'_flat')
             self.__selected_panel.path = path
             self.__saved.append(self.__selected_panel)
-            print(self.__saved)
             self.__num_saved += 1
             self.__selected_panel = None
             self.reload()
@@ -212,8 +212,8 @@ class ImageFlattener(ImageProcessor):
         long_label.pack()
         long_entry = Entry(pop)
         long_entry.pack()
-        short_labe = Label(pop, text='Sorter side (cm)')
-        short_labe.pack()
+        short_label = Label(pop, text='Sorter side (cm)')
+        short_label.pack()
         short_entry = Entry(pop)
         short_entry.pack()
 
