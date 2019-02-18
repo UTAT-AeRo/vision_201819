@@ -14,6 +14,9 @@ TEXT_SIZE = 0.5
 TEXT_COLOR = (0, 125, 200)
 TEXT_FONT = cv2.FONT_HERSHEY_SIMPLEX
 TEXT_THICKNESS = 2
+MARK_TAG = "mark"
+CANVAS_LINE_COLOR = 'red'
+CANVAS_LINE_THICKNESS = 1
 
 
 class State(Enum):
@@ -40,7 +43,7 @@ class DamageSelector(ImageProcessor):
         polly_button = Button(toolbar, text="Poly",
                               command=self.enter_polly_state)
         next_button = Button(toolbar, text="Next",
-                             command=self.load_next_img_or_end)
+                             command=self.next_and_save)
         self.state_lable = Label(root, text=f'State: {self.__state}')
         circle_button.pack(side=LEFT, padx=2, pady=2)
         polly_button.pack(side=LEFT, padx=2, pady=2)
@@ -77,6 +80,11 @@ class DamageSelector(ImageProcessor):
         self.state_lable.config(text=f'State: {self.__state}')
         self.__clicks = []
 
+    def next_and_save(self):
+        """Load next image and save image to save_to"""
+        self.save_img_to_folder_with_extra("annotated")
+        self.load_next_img_or_end()
+
     def left_mouse_down(self, event):
         """Called whenever the left mouse is clicked on the image canvas"""
         x, y = self.movable_image.win_to_cv((event.x, event.y))
@@ -86,22 +94,37 @@ class DamageSelector(ImageProcessor):
         """Called whenever left mouse is moved while being held down
            on canvas.
         """
-        x, y = self.movable_image.win_to_cv((event.x, event.y))
-        pass
+        x, y = self.movable_image.win_to_canvas((event.x, event.y))
+        self._clear_canvas()
+        if self.__state == State.CIRCLE:
+            self._draw_circle_on_canvas_from_last_click((x, y))
+
+    def _clear_canvas(self):
+        self.movable_image.canvas.delete(MARK_TAG)
+
+    def _draw_circle_on_canvas_from_last_click(self, point: Tuple[int, int]):
+        if len(self.__clicks) >= 1:
+            p1 = self.__clicks[-1]
+            p2 = point
+            r = self._dist(p1, p2)
+            self.movable_image.canvas.create_oval(p2[0] - r, p2[1] - r,
+                                                  p2[0] + r, p2[1] + r,
+                                                  width=CANVAS_LINE_THICKNESS,
+                                                  tags=MARK_TAG,
+                                                  outline=CANVAS_LINE_COLOR)
 
     def left_mouse_up(self, event):
         """Called when ever left mouse button is released"""
         x, y = self.movable_image.win_to_cv((event.x, event.y))
 
         if self.__state == State.POLLY:
-            self._draw_line_from_last_click((x, y))
+            self._draw_line_on_cv_from_last_click((x, y))
             self.__clicks.append((x, y))
 
             if len(self.__clicks) >= 4:
-                self._draw_line_from_last_click(self.__clicks[0])
+                self._draw_line_on_cv_from_last_click(self.__clicks[0])
 
                 print('Side 1:', self._dist(self.__clicks[0], self.__clicks[1]) * self.px_size(), 'cm')
-                print('Side 1px:', self._dist(self.__clicks[0], self.__clicks[1]), 'px')
                 print('Side 2:', self._dist(self.__clicks[1], self.__clicks[2]) * self.px_size(), 'cm')
                 print('Side 3:', self._dist(self.__clicks[2], self.__clicks[3]) * self.px_size(), 'cm')
                 print('Side 4:', self._dist(self.__clicks[3], self.__clicks[0]) * self.px_size(), 'cm')
@@ -113,8 +136,8 @@ class DamageSelector(ImageProcessor):
                 self.enter_default_state()
         elif self.__state == State.CIRCLE:
 
-            self._draw_circle_from_last_click((x, y))
-            self._draw_line_from_last_click((x, y))
+            self._draw_circle_on_cv_from_last_click((x, y))
+            self._draw_line_on_cv_from_last_click((x, y))
             self.__clicks.append((x, y))
 
             if len(self.__clicks) >= 2:
@@ -127,7 +150,7 @@ class DamageSelector(ImageProcessor):
 
                 self.__state = State.DEFAULT
 
-    def _draw_line_from_last_click(self, point):
+    def _draw_line_on_cv_from_last_click(self, point):
         if len(self.__clicks) >= 1:
 
             cv2.line(self.movable_image.cv_img, self.__clicks[-1], point,
@@ -145,7 +168,7 @@ class DamageSelector(ImageProcessor):
 
             self.movable_image.refresh()
 
-    def _draw_circle_from_last_click(self, center):
+    def _draw_circle_on_cv_from_last_click(self, center):
         if len(self.__clicks) >= 1:
             cv2.circle(self.movable_image.cv_img, center,
                        int(self._dist(center, self.__clicks[0])),

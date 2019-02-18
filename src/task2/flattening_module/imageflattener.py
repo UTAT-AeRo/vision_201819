@@ -2,7 +2,7 @@ from tkinter import *
 from typing import Tuple, List, Dict, Optional
 import nPTransform
 import numpy as np
-from imageprocessor import ImageProcessor, JsonFormatError, Panel, parse_input
+from imageprocessor import ImageProcessor, JsonFormatError, Panel
 import argparse
 import os
 import json
@@ -71,7 +71,6 @@ class ImageFlattener(ImageProcessor):
         ImageProcessor.__init__(self, master, list(panels_in.keys()), save_to)
 
         self.movable_image.canvas.bind('<Button-1>', self.left_mouse_down)
-        self._master.after(200, self.reload)
 
     @property
     def saved(self) -> List[Panel]:

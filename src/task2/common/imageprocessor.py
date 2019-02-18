@@ -18,6 +18,7 @@ class ImageProcessor:
     _save_to: str  # the path to which the images will be saved
     _paths: List[str]  # A list of all images to be loaded
     _canvas: Canvas
+    _master: Tk
 
     def __init__(self, master: Tk, paths: List[str], save_to: str):
         """
@@ -36,6 +37,7 @@ class ImageProcessor:
         self.movable_image.canvas.bind("<1>",
                                        lambda event: self.movable_image.focus_set)
         self.movable_image.focus_set()
+        self._master.after(200, self.reload)
 
     @property
     def save_to(self):
