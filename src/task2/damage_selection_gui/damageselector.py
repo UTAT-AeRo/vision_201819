@@ -17,6 +17,7 @@ TEXT_THICKNESS = 2
 MARK_TAG = "mark"
 CANVAS_LINE_COLOR = 'red'
 CANVAS_LINE_THICKNESS = 1
+CANVAS_DASH_PATTERN = (5,)
 
 
 class State(Enum):
@@ -98,20 +99,34 @@ class DamageSelector(ImageProcessor):
         self._clear_canvas()
         if self.__state == State.CIRCLE:
             self._draw_circle_on_canvas_from_last_click((x, y))
+        elif self.__state == State.POLLY:
+            self._draw_line_on_canvas_from_last_click((x, y))
 
     def _clear_canvas(self):
         self.movable_image.canvas.delete(MARK_TAG)
 
     def _draw_circle_on_canvas_from_last_click(self, point: Tuple[int, int]):
         if len(self.__clicks) >= 1:
-            p1 = self.__clicks[-1]
+            p1 = self.movable_image.cv_to_canvas(self.__clicks[-1])
             p2 = point
             r = self._dist(p1, p2)
             self.movable_image.canvas.create_oval(p2[0] - r, p2[1] - r,
                                                   p2[0] + r, p2[1] + r,
                                                   width=CANVAS_LINE_THICKNESS,
                                                   tags=MARK_TAG,
+                                                  dash=CANVAS_DASH_PATTERN,
                                                   outline=CANVAS_LINE_COLOR)
+
+    def _draw_line_on_canvas_from_last_click(self, point: Tuple[int, int]):
+        if len(self.__clicks) >= 1:
+            p1 = self.movable_image.cv_to_canvas(self.__clicks[-1])
+            p2 = point
+            self.movable_image.canvas.create_line(p1[0], p1[1],
+                                                  p2[0], p2[1],
+                                                  width=CANVAS_LINE_THICKNESS,
+                                                  tags=MARK_TAG,
+                                                  dash=CANVAS_DASH_PATTERN,
+                                                  fill=CANVAS_LINE_COLOR)
 
     def left_mouse_up(self, event):
         """Called when ever left mouse button is released"""
@@ -148,7 +163,7 @@ class DamageSelector(ImageProcessor):
 
                 print('Area:', np.pi * (radius ** 2))
 
-                self.__state = State.DEFAULT
+                self.enter_default_state()
 
     def _draw_line_on_cv_from_last_click(self, point):
         if len(self.__clicks) >= 1:
