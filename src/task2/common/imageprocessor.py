@@ -1,6 +1,6 @@
 from tkinter import *
 import cv2
-from typing import List
+from typing import List, Dict, Tuple
 import os
 import sys
 # import nonsense
@@ -94,6 +94,23 @@ class ImageProcessor:
         self.movable_image.set_from_path(self.curr_path)
         self.movable_image.reset()
         self.movable_image.clear_dots()
+
+
+class Panel:
+    gps: Tuple[float, float]
+    pixel: Tuple[int, int]
+    dims: Tuple[int, int]
+    path: str
+
+    def __init__(self, gps, pixel):
+        self.gps = gps
+        self.pixel = pixel
+        self.dims = None
+        self.path = None
+
+    def __eq__(self, other):
+        return self.pixel == other.pixel \
+               and self.gps == other.gps
 
 
 class JsonFormatError(Exception):

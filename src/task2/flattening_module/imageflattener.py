@@ -2,7 +2,7 @@ from tkinter import *
 from typing import Tuple, List, Dict, Optional
 import nPTransform
 import numpy as np
-from imageprocessor import ImageProcessor, JsonFormatError
+from imageprocessor import ImageProcessor, JsonFormatError, Panel, parse_input
 import argparse
 import os
 import json
@@ -14,23 +14,6 @@ DOT_SIZE = 10
 PANEL_MARKER_COLOUR = 'blue'
 CORNER_COLOUR = 'red'
 DOT_TAG = 'dots'
-
-
-class Panel:
-    gps: Tuple[float, float]
-    pixel: Tuple[int, int]
-    dims: Tuple[int, int]
-    path: str
-
-    def __init__(self, gps, pixel):
-        self.gps = gps
-        self.pixel = pixel
-        self.dims = None
-        self.path = None
-
-    def __eq__(self, other):
-        return self.pixel == other.pixel \
-               and self.gps == other.gps
 
 
 class ImageFlattener(ImageProcessor):
@@ -167,9 +150,6 @@ class ImageFlattener(ImageProcessor):
 
             return closest_to_center
 
-
-
-
     def _make_panel_dots(self):
         """place dots that mark panels onto screen"""
         for panel in self.__panels_in[self.curr_path]:
@@ -260,7 +240,7 @@ class ImageFlattener(ImageProcessor):
         pop.mainloop()
 
 
-def _parse_input(images_input: any) -> Dict[str, List[Panel]]:
+def parse_input(images_input: any) -> Dict[str, List[Panel]]:
     """Attempts to parse input from either list or dictionary if input is
     bad will throw useful errors"""
 
@@ -320,7 +300,7 @@ if __name__ == '__main__':
     with open(arg.input) as input_json:
         images_input = json.load(input_json)
 
-    panels_in = _parse_input(images_input)
+    panels_in = parse_input(images_input)
 
     flattener = ImageFlattener(master, panels_in, arg.output)
 
