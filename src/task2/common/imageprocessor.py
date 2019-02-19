@@ -99,11 +99,11 @@ class Panel:
     dims: Tuple[int, int]
     path: str
 
-    def __init__(self, gps, pixel):
+    def __init__(self, gps, pixel, dims=None, path=None):
         self.gps = gps
         self.pixel = pixel
-        self.dims = None
-        self.path = None
+        self.dims = dims
+        self.path = path
 
     def __eq__(self, other):
         return self.pixel == other.pixel \

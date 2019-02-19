@@ -1,0 +1,20 @@
+[
+    {
+        "pixel": [2250, 3213],
+        "file": "../flattening_module/test/2019-01-26_21-48-13-682_flat.jpg",
+        "gps": [321, 432],
+        "dims": [12.0, 12.0]
+    },
+    {
+        "pixel": [12, 12],
+        "file": "../flattening_module/test/2019-01-26_21-48-13-682_flat_1.jpg",
+        "gps": [12, 12],
+        "dims": [12.0, 12.0]
+    },
+    {
+        "pixel": [12, 12],
+        "file": "../flattening_module/test/2018-05-25_16-22-29-685_flat.bmp",
+        "gps": [14232, 14232],
+        "dims": [12.0, 12.0]
+    }
+]

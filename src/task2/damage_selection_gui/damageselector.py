@@ -1,10 +1,12 @@
+import argparse
+import json
 from tkinter import *
 import cv2
 from typing import Tuple, List, Optional, Dict
 import numpy as np
 from enum import Enum
 from shapely.geometry import Polygon
-from imageprocessor import Panel, ImageProcessor
+from imageprocessor import Panel, ImageProcessor, JsonFormatError
 
 # https://stackoverflow.com/questions/5501192/how-to-display-picture-and-get-mouse-click-coordinate-on-it
 
@@ -16,8 +18,9 @@ TEXT_FONT = cv2.FONT_HERSHEY_SIMPLEX
 TEXT_THICKNESS = 2
 MARK_TAG = "mark"
 CANVAS_LINE_COLOR = 'red'
-CANVAS_LINE_THICKNESS = 1
+CANVAS_LINE_THICKNESS = 2
 CANVAS_DASH_PATTERN = (5,)
+DECIMAL_PLACES = 0
 
 
 class State(Enum):
@@ -32,7 +35,6 @@ class DamageSelector(ImageProcessor):
     def __init__(self, master: Tk, panels_in: List[Panel], save_to):
         """"""
 
-
         self.__state = State.DEFAULT
         self.__panels_in = panels_in
         self.__clicks = []
@@ -45,11 +47,11 @@ class DamageSelector(ImageProcessor):
                               command=self.enter_polly_state)
         next_button = Button(toolbar, text="Next",
                              command=self.next_and_save)
-        self.state_lable = Label(root, text=f'State: {self.__state}')
+        self.__state_lable = Label(root, text=f'State: {self.__state}')
         circle_button.pack(side=LEFT, padx=2, pady=2)
         polly_button.pack(side=LEFT, padx=2, pady=2)
         next_button.pack(side=LEFT, padx=2, pady=2)
-        self.state_lable.pack()
+        self.__state_lable.pack()
         toolbar.pack(side=TOP, fill=X)
 
         ImageProcessor.__init__(self, master,
@@ -78,7 +80,7 @@ class DamageSelector(ImageProcessor):
         self._reset()
 
     def _reset(self):
-        self.state_lable.config(text=f'State: {self.__state}')
+        self.__state_lable.config(text=f'State: {self.__state}')
         self.__clicks = []
 
     def next_and_save(self):
@@ -174,7 +176,7 @@ class DamageSelector(ImageProcessor):
             text_org = ((point[0] + self.__clicks[-1][0]) // 2,
                         (point[1] + self.__clicks[-1][1]) // 2 + int(TEXT_SIZE))
 
-            length = np.round(self._dist(self.__clicks[-1], point) * self.px_size(), 0)
+            length = np.round(self._dist(self.__clicks[-1], point) * self.px_size(), DECIMAL_PLACES)
 
             cv2.putText(self.movable_image.cv_img,
                         f'{length}cm'
@@ -197,7 +199,7 @@ class DamageSelector(ImageProcessor):
         """
         x, y, _ = self.movable_image.cv_img.shape
 
-        px_size = self.curr_panel.dims[0]
+        px_size = self.curr_panel.dims[0]/x
 
         return px_size
 
@@ -208,17 +210,63 @@ class DamageSelector(ImageProcessor):
         return np.sqrt(delta_x**2 + delta_y**2)
 
 
+def parse_input(panel_listings: any) -> List[Panel]:
+    """Attempts to parse input from either list or dictionary if input is
+    bad will throw useful errors"""
+
+    panels_in = []
+    if not isinstance(panel_listings, list):
+        raise JsonFormatError('Json should be formatted like a list')
+
+    for image_listing in panel_listings:
+        if ('file' not in image_listing or
+            'gps' not in image_listing or
+                'pixel' not in image_listing):
+            raise JsonFormatError('All items must contain a \"file\", \
+                                  \"gps\" and \"pixle\" keys.')
+
+        file = image_listing['file']
+        gps = image_listing['gps']
+        pixel = image_listing['pixel']
+        dims = image_listing['dims']
+
+        if not isinstance(file, str):
+            raise JsonFormatError('File must be string')
+        if not isinstance(gps, list) or not isinstance(pixel, list) \
+            or not isinstance(dims, list) or len(gps) != 2 or len(pixel) != 2\
+            or len(dims) != 2:
+            raise JsonFormatError('\"gps\" and \"pixel 2\" should be a list \
+                                   of length 2')
+
+        panels_in.append(Panel(tuple(gps), tuple(pixel), tuple(dims), file))
+
+    return panels_in
+
+
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Flatten a list of panels')
+    parser.add_argument('--input', type=str,
+                        help='The path to the jason contain')
+    parser.add_argument('--output', type=str,
+                        help='The folder to save output new images')
+    parser.add_argument('--line_width', type=int,
+                        help='The size of the dots used to mark and select \
+                        panel corners.',
+                        default=LINE_WIDTH)
+    parser.add_argument('--text_size', type=int, help='The size of the text on \
+                        the final cv image', default=TEXT_SIZE)
+    parser.add_argument('--digits')
+
+    arg = parser.parse_args()
+
+    LINE_WIDTH = arg.line_width
+    CANVAS_LINE_THICKNESS = arg.line_width
+
+    with open(arg.input) as input_json:
+        panel_listings = json.load(input_json)
+
+    panels_in = parse_input(panel_listings)
+
     root = Tk()
-
-    p1 = Panel((123, 143), (2000, 2000))
-    p2 = Panel((123.1, 90.2), (3023, 1231))
-
-    p1.path = "/home/lev/Pictures/OdroidJan2619/2019-01-26_21-48-13-682.jpg"
-    p2.path = "/home/lev/Pictures/OdroidJan2619/2019-01-26_21-48-13-682.jpg"
-
-    p1.dims = (12, 32)
-    p2.dims = (12, 23)
-
-    pro = DamageSelector(root, [p1, p2], "test")
+    pro = DamageSelector(root, panels_in, "test")
     root.mainloop()
