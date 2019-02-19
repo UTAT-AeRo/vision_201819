@@ -315,6 +315,7 @@ if __name__ == '__main__':
         panel_dict['pixel'] = panel.pixel
         panel_dict['file'] = panel.path
         panel_dict['gps'] = panel.gps
+        panel_dict['dims'] = panel.dims
         output_list.append(panel_dict)
 
     with open(os.path.join(arg.output, 'result.json'), 'w') as outfile:
