@@ -2,6 +2,11 @@ from tkinter import *
 import cv2
 from typing import List, Dict, Tuple
 import os
+import sys
+_script_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(os.path.join(_script_path,
+                os.path.join(os.pardir, os.pardir)),
+                'common'))
 from movableimage import MovableImage
 
 

@@ -1,14 +1,19 @@
 from tkinter import *
 from typing import Tuple, List, Dict, Optional
 import nPTransform
+
 import numpy as np
-from imageprocessor import ImageProcessor, JsonFormatError, Panel
 import argparse
-import os
 import json
 from shapely.geometry.point import Point
 from shapely.geometry.polygon import Polygon
 
+# adds image the imageprocessor to the sys.path so that we can import it
+import os
+import sys
+_script_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(os.path.join(_script_path, os.pardir), 'common'))
+from imageprocessor import Panel, ImageProcessor, JsonFormatError
 
 DOT_SIZE = 10
 PANEL_MARKER_COLOUR = 'blue'
@@ -67,7 +72,6 @@ class ImageFlattener(ImageProcessor):
         save_button.pack(side=LEFT, padx=2, pady=2)
         next_button.pack(side=LEFT, padx=2, pady=2)
         toolbar.pack(side=TOP, fill=X)
-
         ImageProcessor.__init__(self, master, list(panels_in.keys()), save_to)
 
         self.movable_image.canvas.bind('<Button-1>', self.left_mouse_down)
@@ -124,6 +128,9 @@ class ImageFlattener(ImageProcessor):
         Precondition:
         len(self.__clicks) == 4
         """
+        if any(p.pixel is None for p in self.__panels_in[self.curr_path]):
+            return Panel(None, None)
+
         bounds = Polygon([self.movable_image.canvas_to_cv(click) for click
                           in self.__clicks])
 
@@ -152,7 +159,7 @@ class ImageFlattener(ImageProcessor):
     def _make_panel_dots(self):
         """place dots that mark panels onto screen"""
         for panel in self.__panels_in[self.curr_path]:
-            if panel not in self.saved:
+            if panel not in self.saved and panel.pixel is not None:
                 self.movable_image.make_dot(PANEL_MARKER_COLOUR,
                                             self.movable_image.cv_to_canvas(panel.pixel),
                                             DOT_SIZE)
@@ -242,7 +249,6 @@ class ImageFlattener(ImageProcessor):
 def parse_input(images_input: any) -> Dict[str, List[Panel]]:
     """Attempts to parse input from either list or dictionary if input is
     bad will throw useful errors"""
-
     panels_in = dict()
     if not isinstance(images_input, list):
         raise JsonFormatError('Json should be formatted like a list')
@@ -257,6 +263,8 @@ def parse_input(images_input: any) -> Dict[str, List[Panel]]:
         file = image_listing['file']
         gpss = image_listing['gps']
         pixels = image_listing['pixels']
+
+        print(file, gpss, pixels)
 
         if not isinstance(file, str):
             raise JsonFormatError('File must be string')
@@ -275,7 +283,8 @@ def parse_input(images_input: any) -> Dict[str, List[Panel]]:
                 panels_in[file].append(Panel(gps, pixel))
             else:
                 panels_in[file] = [Panel(gps, pixel)]
-
+        if gpss == [] or pixels == []:
+            panels_in[file] = [Panel(None, None)]
     return panels_in
 
 
