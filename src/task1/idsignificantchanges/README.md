@@ -15,7 +15,7 @@ more generally:</br>
   <img src="https://cdn.discordapp.com/attachments/511941623299571713/549033009215700992/unknown.png" width=500 align= "center">
 </p>
 </br>
-2. Cycle through images on the second through window iwth Next, Previous. Then when ready, click location on map to add label.
+2. Cycle through images on the second window with Next, Previous. Then when ready, click location on map to add label.
 <p align="left">
   <img src="https://cdn.discordapp.com/attachments/511941623299571713/549033235871563787/unknown.png" alt="Image of evaluation_metrics.csv" width=500 align = "center">
 </p>
