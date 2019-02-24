@@ -66,9 +66,7 @@ photo_label.pack()
 # Function called when we get to the end of the list of images to go through.
 def end_program(final_data):
 	with open(json_out_name, 'w') as outfile:
-		outfile.write("{\"Positive\": ")
-		json.dump({"Positive": final_data}, outfile)
-		outfile.write("}")
+		json.dump({"positive": final_data}, outfile)
 	exit() 
 
 # Function called when "right swipped" (with the right arrow key)
@@ -120,7 +118,12 @@ def undo(e):
 
 	if len(good_images) > 0:
 		good_images.pop(len(good_images)-1)
-	counter -= 1 #TODO: Prevent out of bounds
+
+	# Out of bounds
+	if counter - 1 < 0:
+		return
+
+	counter -= 1
 	print("undo")
 	img2 = ImageTk.PhotoImage(Image.open(img_names[counter]))
 
