@@ -19,7 +19,7 @@
 #       "altitude_agl": "57.169998",
 #       "timestamp": "2018-05-25_16-22-28-918"
 #     },
-#     "altitude": {
+#     "attitude": {
 #       "roll_angle": "-9.738050",
 #       "pitch_angle": "-2.027207",
 #       "yaw_angle": "-52.516975",
@@ -34,7 +34,7 @@
 #       "altitude_agl": "56.959999",
 #       "timestamp": "2018-05-25_16-22-28-918"
 #     },
-#     "altitude": {
+#     "attitude": {
 #       "roll_angle": "-7.079698",
 #       "pitch_angle": "-1.237615",
 #       "yaw_angle": "-51.876190",
@@ -100,11 +100,11 @@ class MetadataProcessor(object):
             raise ValueError('corrected gps length mismatch')
         corr_gps = {"longitude": data[0], "latitude": data[1], "altitude_agl": data[2], "timestamp": data[3]}
 
-        # Corrected altitude data
+        # Corrected attitude data
         data = c_split[1].split(",")
         if len(data) != 4:
-            raise ValueError('corrected altitude length mismatch')
-        corr_alt = {"roll_angle": data[0], "pitch_angle": data[1], "yaw_angle": data[2], "timestamp": data[3]}
+            raise ValueError('corrected attitude length mismatch')
+        corr_att = {"roll_angle": data[0], "pitch_angle": data[1], "yaw_angle": data[2], "timestamp": data[3]}
 
         # Corrected timestamp ms
         corr_ts = c_split[2]
@@ -118,18 +118,18 @@ class MetadataProcessor(object):
             raise ValueError('corrected gps length mismatch')
         uncorr_gps = {"longitude": data[0], "latitude": data[1], "altitude_agl": data[2], "timestamp": data[3]}
 
-        # UnCorrected altitude data
+        # UnCorrected attitude data
         data = c_split[5].split(",")
         if len(data) != 4:
-            raise ValueError('corrected altitude length mismatch')
-        uncorr_alt = {"roll_angle": data[0], "pitch_angle": data[1], "yaw_angle": data[2], "timestamp": data[3]}
+            raise ValueError('corrected attitude length mismatch')
+        uncorr_att = {"roll_angle": data[0], "pitch_angle": data[1], "yaw_angle": data[2], "timestamp": data[3]}
 
         # UnCorrected timestamp ms
         uncorr_ts = c_split[6]
 
         # Final
         return {
-            "corrected": {"gps": corr_gps, "altitude": corr_alt, "timestamp": corr_ts},
-            "uncorrected": {"gps": uncorr_gps, "altitude": uncorr_alt, "timestamp": uncorr_ts},
+            "corrected": {"gps": corr_gps, "attitude": corr_att, "timestamp": corr_ts},
+            "uncorrected": {"gps": uncorr_gps, "attitude": uncorr_att, "timestamp": uncorr_ts},
             "index": index
         }
