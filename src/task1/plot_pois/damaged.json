@@ -1,13 +1,15 @@
 {
    "damaged":[
       {
-         "lat":48.511445,
-         "long":-71.641504,
+         "lat":48.511161, 
+         "long":-71.650085,
+		 "message":"A broken road",
          "filename":"img_0124.jpg"
       },
 	  {
-		"lat":48.511333,
-		"long":-71.650733,
+		"lat":48.509838, 
+		"long":-71.645747,
+		"message":"A fork in the road",
 		"filename":"img.jpg"
 	  }
    ]
