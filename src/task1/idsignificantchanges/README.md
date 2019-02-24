@@ -20,23 +20,23 @@ more generally:</br>
   <img src="https://cdn.discordapp.com/attachments/511941623299571713/549033235871563787/unknown.png" alt="Image of evaluation_metrics.csv" width=500 align = "center">
 </p>
 </br>
-3. Once you're satisfied, simply close the map window, which will write out a `idsignificantchanges.json`
+3. Once you've cycled through all of the survey images, simply close the map window. This will write out a `idsignificantchanges.json`
 </br>
 
 ```
 {
 "damaged": [
-	{"lat": 43.66520317216643, 
-	"long": -79.39335502006688, 
-	"message": "something happened", 
+	{"lat": 43.66520317216643,
+	"long": -79.39335502006688,
+	"message": "something happened",
 	"filename": "images/2019-02-22_18-26-59-161.jpg"}
 	]
 }
 ```
 
-# Sample Input 
+# Sample Input
 
-sample reference map json assumes map is oriented north 
+sample reference map json assumes map is oriented north
 ```
 {"topleft": {"long":-79.393549, "lat" :43.665497},
  "bottomright": {"long":-79.391549, "lat":43.664320},
@@ -60,7 +60,7 @@ some `idsignificantchanges.json` containing:
 {
    "damaged":[
       {
-         "lat":XX.XXX, 
+         "lat":XX.XXX,
          "long":XX.XXX,
 		     "message":"message",
          "filename":"absoluate/path/to/img.jpg"
