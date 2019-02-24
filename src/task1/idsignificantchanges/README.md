@@ -7,6 +7,10 @@ to use example data, run:
 
 more generally:</br>
 `python idsignificantchange.py --map=[path to reference map json without quotations marks] --photos=[path to surveyphotos json without quotations marks]`
+</br>
+
+1. 2 windows will launch. One will contain the map, the other will be the first image in the list of images in `surveyphotos.json`
+
 
 # Input 
 
