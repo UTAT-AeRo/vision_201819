@@ -1,6 +1,13 @@
 from PyQt5 import QtWidgets
 
 def drawHome(window):
+    """
+    Draws the home layout
+
+    :param window: The QT session
+    :return:
+    """
+
     # Quit Button
     btn = QtWidgets.QPushButton("Quit", window)
     btn.clicked.connect(window.exitProgram)
@@ -33,82 +40,88 @@ def drawHome(window):
     btn.resize(200, 50)
     btn.move(25, 90)
 
-def drawTask1(self):
+def drawTask1(window):
+    """
+    Draws the home layout
+
+    :param window: The QT session
+    :return:
+    """
     # Module 1 Button
-    self.autofilterButton = QtWidgets.QPushButton("Module 1 - Auto Filter", self)
-    self.autofilterButton.clicked.connect(self.launchAutoFilterModule)
-    self.autofilterButton.move(25, 250)
-    setModuleButtonProperties(self.autofilterButton)
+    window.autofilterButton = QtWidgets.QPushButton("Module 1 - Auto Filter", window)
+    window.autofilterButton.clicked.connect(window.launchAutoFilterModule)
+    window.autofilterButton.move(25, 250)
+    setModuleButtonProperties(window.autofilterButton)
 
     # Module 1 Label
-    self.autofilterLabel = QtWidgets.QLabel(self)
-    self.autofilterLabel.move(240, 250)
-    setNotRunLabel(self.autofilterLabel)
+    window.autofilterLabel = QtWidgets.QLabel(window)
+    window.autofilterLabel.move(240, 250)
+    setNotRunLabel(window.autofilterLabel)
 
     # ID Changes Button
-    self.idSigChangesButton = QtWidgets.QPushButton("ID Signif Changes", self)
-    self.idSigChangesButton.move(325, 250)
-    setModuleButtonProperties(self.idSigChangesButton)
+    window.idSigChangesButton = QtWidgets.QPushButton("ID Signif Changes", window)
+    window.idSigChangesButton.move(325, 250)
+    setModuleButtonProperties(window.idSigChangesButton)
 
     # ID Changes Label
-    self.idSigChangesLabel = QtWidgets.QLabel(self)
-    setNotRunLabel(self.idSigChangesLabel)
-    self.idSigChangesLabel.move(545, 250)
+    window.idSigChangesLabel = QtWidgets.QLabel(window)
+    setNotRunLabel(window.idSigChangesLabel)
+    window.idSigChangesLabel.move(545, 250)
 
     # Module 2 Button
-    self.manualfilterButton = QtWidgets.QPushButton("Module 2 - Human Filter", self)
-    self.manualfilterButton.clicked.connect(self.launchManualFilterModule)
-    self.manualfilterButton.move(25, 300)
-    setModuleButtonProperties(self.manualfilterButton)
+    window.manualfilterButton = QtWidgets.QPushButton("Module 2 - Human Filter", window)
+    window.manualfilterButton.clicked.connect(window.launchManualFilterModule)
+    window.manualfilterButton.move(25, 300)
+    setModuleButtonProperties(window.manualfilterButton)
 
     # Module 2 Label
-    self.manualFilterLabel = QtWidgets.QLabel(self)
-    self.manualFilterLabel.move(240, 300)
-    setNotRunLabel(self.manualFilterLabel)
+    window.manualFilterLabel = QtWidgets.QLabel(window)
+    window.manualFilterLabel.move(240, 300)
+    setNotRunLabel(window.manualFilterLabel)
 
     # Module 3 Button
-    self.locateIRButton = QtWidgets.QPushButton("Module 3 - Locate IR Pts", self)
-    self.locateIRButton.clicked.connect(self.launchLocateIRModule)
-    self.locateIRButton.move(25, 350)
-    setModuleButtonProperties(self.locateIRButton)
+    window.locateIRButton = QtWidgets.QPushButton("Module 3 - Locate IR Pts", window)
+    window.locateIRButton.clicked.connect(window.launchLocateIRModule)
+    window.locateIRButton.move(25, 350)
+    setModuleButtonProperties(window.locateIRButton)
 
     # Module 3 Label
-    self.locateIRLabel = QtWidgets.QLabel(self)
-    self.locateIRLabel.move(240, 350)
-    setNotRunLabel(self.locateIRLabel)
+    window.locateIRLabel = QtWidgets.QLabel(window)
+    window.locateIRLabel.move(240, 350)
+    setNotRunLabel(window.locateIRLabel)
 
     # Module FlattenImages Button
-    self.flattenImagesButton = QtWidgets.QPushButton("Flatten Images", self)
-    self.flattenImagesButton.move(325, 350)
-    setModuleButtonProperties(self.flattenImagesButton)
+    window.flattenImagesButton = QtWidgets.QPushButton("Flatten Images", window)
+    window.flattenImagesButton.move(325, 350)
+    setModuleButtonProperties(window.flattenImagesButton)
 
     # Module FlattenImages Label
-    self.FlattenImagesLabel = QtWidgets.QLabel(self)
-    self.FlattenImagesLabel.move(545, 350)
-    setNotRunLabel(self.FlattenImagesLabel)
+    window.FlattenImagesLabel = QtWidgets.QLabel(window)
+    window.FlattenImagesLabel.move(545, 350)
+    setNotRunLabel(window.FlattenImagesLabel)
 
     # Module AreaPercent Button
-    self.sortImagesButton = QtWidgets.QPushButton("Sort Images Top 3", self)
-    self.sortImagesButton.move(625, 350)
-    setModuleButtonProperties(self.sortImagesButton)
+    window.sortImagesButton = QtWidgets.QPushButton("Sort Images Top 3", window)
+    window.sortImagesButton.move(625, 350)
+    setModuleButtonProperties(window.sortImagesButton)
 
     # Module AreaPercent Label
-    self.sortImagesLabel = QtWidgets.QLabel(self)
-    self.sortImagesLabel.move(845, 350)
-    setNotRunLabel(self.sortImagesLabel)
+    window.sortImagesLabel = QtWidgets.QLabel(window)
+    window.sortImagesLabel.move(845, 350)
+    setNotRunLabel(window.sortImagesLabel)
 
     # Module 4 Button
-    self.plotButton = QtWidgets.QPushButton("Module 4 - Plot On Map", self)
-    self.plotButton.move(25, 400)
-    self.plotButton.clicked.connect(self.launchPlottingModule)
-    setModuleButtonProperties(self.plotButton)
+    window.plotButton = QtWidgets.QPushButton("Module 4 - Plot On Map", window)
+    window.plotButton.move(25, 400)
+    window.plotButton.clicked.connect(window.launchPlottingModule)
+    setModuleButtonProperties(window.plotButton)
 
     # Module 4 Label
-    self.plotLabel = QtWidgets.QLabel(self)
-    self.plotLabel.move(240, 400)
-    self.plotLabel.resize(400, 50)
-    self.plotLabel.setStyleSheet('color: red')
-    self.plotLabel.setText("Not Run (also requires ID Signif Changes to be completed)")
+    window.plotLabel = QtWidgets.QLabel(window)
+    window.plotLabel.move(240, 400)
+    window.plotLabel.resize(400, 50)
+    window.plotLabel.setStyleSheet('color: red')
+    window.plotLabel.setText("Not Run (also requires ID Signif Changes to be completed)")
 
 
 # Given a QWidgetLabel, sets the label to not run

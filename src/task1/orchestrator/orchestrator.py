@@ -26,7 +26,7 @@ class MainWindow(QtWidgets.QMainWindow):
         mainWindowLayout.drawHome(self)
         mainWindowLayout.drawTask1(self)
         self.show()
-        session.startupCheck(self)
+        session.startupCheck(self, jsondir)
 
     # fetches the director from the user and updates the program accordingly
     def getDirectory(self):
