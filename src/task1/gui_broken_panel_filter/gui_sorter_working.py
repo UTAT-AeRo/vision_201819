@@ -118,7 +118,12 @@ def undo(e):
 
 	if len(good_images) > 0:
 		good_images.pop(len(good_images)-1)
-	counter -= 1 #TODO: Prevent out of bounds
+
+	# Out of bounds
+	if counter - 1 < 0:
+		return
+
+	counter -= 1
 	print("undo")
 	img2 = ImageTk.PhotoImage(Image.open(img_names[counter]))
 
