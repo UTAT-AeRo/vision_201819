@@ -22,6 +22,7 @@ more generally:</br>
 </br>
 3. Once you're satisfied, simply close the map window, which will write out a `idsignificantchanges.json`
 </br>
+
 ```
 {
 "damaged": [
