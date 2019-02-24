@@ -1,7 +1,9 @@
-# Overview
+# Description
 Corresponds to:
-https://trello.com/c/l0EsBnPP/34-id-significant-changes
+https://trello.com/c/l0EsBnPP/34-id-significant-changes</br>
+A gui for labelling a reference map based on survey photos
 
+# Usage
 to use example data, run:
 `python idsignificantchanges.py --map=inputmap.json --photos=inputsurveyphotos.json`
 
@@ -33,6 +35,10 @@ more generally:</br>
 	]
 }
 ```
+
+# Prerequisites
+
+`json, tkinter, argparse, PIL`
 
 # Sample Input
 

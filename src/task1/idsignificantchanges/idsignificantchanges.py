@@ -2,7 +2,6 @@ import json
 import tkinter
 import argparse
 import PIL.Image, PIL.ImageTk
-from tkinter import messagebox
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
