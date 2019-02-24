@@ -6,6 +6,7 @@ import argparse
 import json
 from skimage import measure
 import numpy as np
+from matplotlib import pyplot as plt
 
 # Show image (for debugging)
 def show_img(image):
@@ -13,19 +14,17 @@ def show_img(image):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-# Detect if bright spots are large enough
-def detect_blobs(img):
-    labels = measure.label(img, connectivity=1.5)
-    mask = np.zeros(img.shape, dtype="uint8")
-    # Filter blobs
-    for label in np.unique(labels):
-        if label != 0:
-            lm = np.zeros(img.shape, dtype="uint8")
-            lm[labels == label] = 255
-            numPixels = cv2.countNonZero(lm)
-            if numPixels > 10:
-                mask = cv2.add(mask, lm)
-    return mask
+# detect contours --
+# from: https://www.pyimagesearch.com/2015/04/06/zero-parameter-automatic-canny-edge-detection-with-python-and-opencv/
+def auto_canny(image, sigma=0.33):
+    # compute the median of the single channel pixel intensities
+    v = np.median(image)
+    # apply automatic Canny edge detection using the computed median
+    lower = int(max(0, (1.0 - sigma) * v))
+    upper = int(min(255, (1.0 + sigma) * v))
+    edged = cv2.Canny(image, lower, upper)
+    # return the edged image
+    return edged
 
 # Detect whether there exists a spot bright enough
 def process_img(file_name):
@@ -37,7 +36,7 @@ def process_img(file_name):
     # Smooth possible blobs
     preprocessed_img = cv2.dilate(preprocessed_img, None, iterations=4)
     preprocessed_img = cv2.erode(preprocessed_img, None, iterations=2)
-    filtered_img = detect_blobs(preprocessed_img)
+    filtered_img = auto_canny(preprocessed_img)
     # Draw circle
     cnts = cv2.findContours(filtered_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if imutils.is_cv2() else cnts[1]
