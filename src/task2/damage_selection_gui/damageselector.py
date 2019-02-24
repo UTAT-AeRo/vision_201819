@@ -6,6 +6,14 @@ from typing import Tuple, List, Optional, Dict
 import numpy as np
 from enum import Enum
 from shapely.geometry import Polygon
+
+# adds image the imageprocessor to the sys.path so that we can import it
+import os
+import sys
+_script_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(os.path.join(_script_path, os.pardir), 'common'))
+
+print(sys.path[-1])
 from imageprocessor import Panel, ImageProcessor, JsonFormatError
 
 # Defaults for args
@@ -270,14 +278,18 @@ def parse_input(panel_listings: any) -> List[Panel]:
 
         if not isinstance(file, str):
             raise JsonFormatError('File must be string')
-        if not isinstance(gps, list) or not isinstance(pixel, list) \
-                or not isinstance(dims, list) or len(gps) != 2 or len(
-            pixel) != 2 \
-                or len(dims) != 2:
-            raise JsonFormatError('\"gps\" and \"pixel 2\" should be a list \
-                                   of length 2')
+        if not isinstance(dims, list) or len(dims) != 2:
+            raise JsonFormatError('\"dims\" should be a list of length 2')
 
-        panels_in.append(Panel(tuple(gps), tuple(pixel), tuple(dims), file))
+        if gps is None or pixel is None:
+            panels_in.append(Panel(None, None, tuple(dims), file))
+        else:
+            if not isinstance(gps, list) or not isinstance(pixel, list) \
+               or len(gps) != 2 or len(pixel) != 2:
+                raise JsonFormatError('\"gps\" and \"pixel 2\" should be a list\
+                                        of length 2 or null')
+
+            panels_in.append(Panel(tuple(gps), tuple(pixel), tuple(dims), file))
 
     return panels_in
 
@@ -294,7 +306,7 @@ if __name__ == '__main__':
                         default=LINE_WIDTH)
     parser.add_argument('--text_size', type=float, help='The size of the text on \
                         the final cv image', default=TEXT_SIZE)
-    parser.add_argument('--decimal_places', type=int, float='The number of \
+    parser.add_argument('--decimal_places', type=int, help='The number of \
                         decimal points for lengths and areas',
                         default=DECIMAL_PLACES)
 
