@@ -10,7 +10,28 @@ more generally:</br>
 </br>
 
 1. 2 windows will launch. One will contain the map, the other will be the first image in the list of images in `surveyphotos.json`
-
+</br>
+<p align="left">
+  <img src="https://cdn.discordapp.com/attachments/511941623299571713/549033009215700992/unknown.png" width=500 align= "center">
+</p>
+</br>
+2. Cycle through images on the second through window iwth Next, Previous. Then when ready, click location on map to add label.
+<p align="left">
+  <img src="https://cdn.discordapp.com/attachments/511941623299571713/549033235871563787/unknown.png" alt="Image of evaluation_metrics.csv" width=300 align = "center">
+</p>
+</br>
+3. Once you're satisfied, simply close the map window, which will write out a `idsignificantchanges.json`
+</br>
+```
+{
+"damaged": [
+	{"lat": 43.66520317216643, 
+	"long": -79.39335502006688, 
+	"message": "something happened", 
+	"filename": "images/2019-02-22_18-26-59-161.jpg"}
+	]
+}
+```
 
 # Input 
 
