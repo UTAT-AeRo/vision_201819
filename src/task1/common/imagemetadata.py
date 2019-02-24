@@ -49,6 +49,8 @@
 #
 # If the index is 0, the data is extrapolated, else data is inteprolated with number being the index within the queue
 # See https://github.com/UTAT-AeRo/TeledyneDalsa_Odroid/issues/2
+#
+# Throw exceptions on reading error
 
 
 class MetadataProcessor(object):
@@ -61,12 +63,15 @@ class MetadataProcessor(object):
         path - the relative path to the file
         """
 
-        f = open(path, "r")
-        if f.mode != 'r':
-            raise ValueError('the given reader is not in reading mode')
+        try:
+            f = open(path, "r")
+            if f.mode != 'r':
+                raise ValueError('the given reader is not in reading mode')
 
-        # Read in the file and perform basic validation
-        return f.read()
+            # Read in the file and perform basic validation
+            return f.read()
+        except EnvironmentError:
+            raise ValueError('the metadata file was not found/could be read')
 
     def ReadFromImageFilePath(self, path):
         """Returns a string of text from the given file path provided the file is the image file
