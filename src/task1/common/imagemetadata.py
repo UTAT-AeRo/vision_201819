@@ -1,7 +1,11 @@
 # Sample Call
 #
 # p = MetadataProcessor()
-# r = c.ReadForProcessing("test/2018-05-25_16-22-29-018.txt")
+# r = c.Read("test/2018-05-25_16-22-29-018.txt")
+# p.Process(r)
+#
+# p = MetadataProcessor()
+# r = c.ReadFromImageFilePath("test/2018-05-25_16-22-29-018.bmp")
 # p.Process(r)
 
 
@@ -63,6 +67,16 @@ class MetadataProcessor(object):
 
         # Read in the file and perform basic validation
         return f.read()
+
+    def ReadFromImageFilePath(self, path):
+        """Returns a string of text from the given file path provided the file is the image file
+
+        Keyword arguments:
+        path - the relative path to the file
+        """
+
+        newPath = path[:path.rfind(".")] + ".txt"
+        return self.Read(newPath)
 
     def Process(self, text):
         """Returns an object representation of the metadata file
