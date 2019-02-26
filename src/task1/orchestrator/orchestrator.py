@@ -63,10 +63,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.plotButton.setEnabled(True)  # Plot Button unlock
             updateTextCompletedGreen(self.manualFilterLabel)
 
-        if True and not self.plotButton.isEnabled():  # DEBUG
-            self.plotButton.setEnabled(True)
-            updateTextCompletedGreen(self.manualFilterLabel)
-
         if not self.exitRequested:
             threading.Timer(0.5, self.mainBGloop).start()
 
