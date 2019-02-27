@@ -51,8 +51,7 @@ class MarkerViewer(gui.Viewer):
                 abs_path = os.path.abspath(filename)
                 info_abs_path = '.'.join(abs_path.split('.')[:-1]+['txt'])
                 p = imagemetadata.MetadataProcessor()
-                r = p.Read(info_abs_path)
-                info = p.Process(r)
+                info = p.Process(p.Read(info_abs_path))
                 i = info['corrected']
                 yawangle = float(i['attitude']['yaw_angle'])
                 pitchangle = float(i['attitude']['pitch_angle'])
