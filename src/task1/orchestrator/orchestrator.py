@@ -21,7 +21,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Initialize Window
         super(MainWindow, self).__init__()
-        self.setGeometry(50, 50, 950, 550)
+        self.setGeometry(50, 50, 625, 900)
         self.setWindowTitle("AeRo Task 1 Program")
         mainWindowLayout.drawHome(self)
         mainWindowLayout.drawTask1(self)
