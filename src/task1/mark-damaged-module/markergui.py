@@ -3,7 +3,8 @@ import os
 from PIL import Image, ImageDraw
 import sys
 sys.path.append("..")
-from common import gui
+from common import gui, imagemetadata
+from projection_module import projection
 import json
 import argparse
 
@@ -16,6 +17,7 @@ class MarkerViewer(gui.Viewer):
         next_button = Button(self.button_fr, text="done", command=self.handle_done)
         next_button.grid(row=0, column=12, sticky="e", padx=4, pady=4)
 
+    # Draw the given image in filename
     def get_image(self, filename):
         im = Image.open(filename)
         im = im.resize((self.img_x, self.img_y))
@@ -25,6 +27,7 @@ class MarkerViewer(gui.Viewer):
                 draw.rectangle([c_i - 10 for c_i in coord]+[c_i + 10 for c_i in coord],fill='white')
         return im
 
+    # Add new white blob to viewer, or remove white blob
     def on_click(self, button_press_event):
         x = button_press_event.x
         y = button_press_event.y
@@ -39,11 +42,38 @@ class MarkerViewer(gui.Viewer):
         self.next_frame(self.index)
 
     def handle_done(self):
+        ip = projection.ImageProjection()
+        output_json = []
         with open(self.output_file, 'w') as fp:
-            # call projection code here
-            json.dump(self.dots, fp)
+            for filename in self.dots:
+                # Get information from metadata
+                entry = {}
+                abs_path = os.path.abspath(filename)
+                info_abs_path = '.'.join(abs_path.split('.')[:-1]+['txt'])
+                p = imagemetadata.MetadataProcessor()
+                r = p.Read(info_abs_path)
+                info = p.Process(r)
+                i = info['corrected']
+                yawangle = float(i['attitude']['yaw_angle'])
+                pitchangle = float(i['attitude']['pitch_angle'])
+                rollangle = float(i['attitude']['roll_angle'])
+                altdrone = float(i['gps']['altitude_agl'])
+                latdrone = float(i['gps']['latitude'])
+                longdrone = float(i['gps']['longitude'])
+                gps = []
+                for pimg in self.dots[filename]:
+                    # Call projection code
+                    latlongalt = ip.get_pixel_coords(pimg, yawangle, pitchangle, rollangle, latdrone, longdrone, altdrone)
+                    gps.append(latlongalt[:2])
+                # Add entry to json
+                entry['gps'] = gps
+                entry['pixel'] = self.dots[filename]
+                entry['file'] = abs_path
+                output_json.append(entry)
+            json.dump(output_json, fp)
         self.top.destroy()
 
+# Self explanatory
 def define_args():
     parser = argparse.ArgumentParser(description='Detect broken solar panels')
     parser.add_argument('-i', '--input_file', help='specify input json file path', required=True)
