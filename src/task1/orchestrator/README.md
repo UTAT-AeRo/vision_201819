@@ -9,8 +9,7 @@ The orchestrator will unlock buttons for different modules depending on where th
 While only 1 instance of each module should be running, the orchestrator itself can be open on multiple computers as long as they are opened from the same directory on one machine (for example - network drive). One machine can be working on one branch of the workflow while the other computer can be working on the other branch.
 
 # Workflow
-![alt text](MVP flow chart.jpg)
-CHANGE: Flatten images come after projection now
+![alt text](mvp.png)
 
 # Prerequisites
 - Python 3

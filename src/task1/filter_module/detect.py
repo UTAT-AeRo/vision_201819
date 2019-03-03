@@ -40,14 +40,17 @@ def process_img(file_name):
     # Draw circle
     cnts = cv2.findContours(filtered_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-    if len(cnts) > 0:
-        cnts = contours.sort_contours(cnts)[0]
-        for (i, c) in enumerate(cnts):
-            ((cX, cY), radius) = cv2.minEnclosingCircle(c)
-            cv2.circle(image, (int(cX), int(cY)), int(radius),
-                       (0, 0, 255), 2)
-        return image
-    return None
+
+    return image
+
+    # if cnts is not None and len(cnts) > 0:
+    #     cnts = contours.sort_contours(cnts)[0]
+    #     for (i, c) in enumerate(cnts):
+    #         ((cX, cY), radius) = cv2.minEnclosingCircle(c)
+    #         cv2.circle(image, (int(cX), int(cY)), int(radius),
+    #                    (0, 0, 255), 2)
+    #     return image
+    # return None
 
 # Set up the command line argument parsing
 def define_args():
