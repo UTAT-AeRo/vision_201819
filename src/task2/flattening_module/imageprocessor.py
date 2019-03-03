@@ -3,10 +3,10 @@ import cv2
 from typing import List
 import os
 import sys
-# import nonsense
-sys.path.insert(0, os.path.join(os.path.join(sys.path[0],
-                                os.path.join(os.pardir, os.pardir)),
-                                'common'))
+_script_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(os.path.join(_script_path,
+                os.path.join(os.pardir, os.pardir)),
+                'common'))
 from movableimage import MovableImage
 
 
@@ -65,11 +65,11 @@ class ImageProcessor:
 
         name = os.path.basename(self.curr_path)
 
-        slit = name.split('.')
+        split = name.split('.')
 
-        if len(slit) > 1:
-            sections = slit[:-1]
-            extension = slit[-1]
+        if len(split) > 1:
+            sections = split[:-1]
+            extension = split[-1]
             path = os.path.join(self._save_to, '.'.join(sections) + extra + '.'
                                 + extension)
             cv2.imwrite(path, self.movable_image.cv_img)
@@ -97,9 +97,4 @@ class ImageProcessor:
 
 
 class JsonFormatError(Exception):
-    def __init__(self, explanation: str = ''):
-        self.__init__()
-        self.explanation = explanation
-
-    def __str__(self):
-        return self.explanation
+    pass
