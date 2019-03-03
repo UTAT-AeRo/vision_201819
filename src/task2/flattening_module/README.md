@@ -24,32 +24,42 @@ Example Call
 ```python flattener.py --input test.json --output test_folder```
 
 
-### Input Json format 1
-```json
-{
-    "../../task1/common/test/2018-05-25_16-22-29-018.bmp": [[408, 304], [596, 302], [619, 158], [472, 188], [874, 256], [738, 392]],
-    "../../task1/common/test/2018-05-25_16-22-29-685.bmp": [121, 312]
-}
-```
-
-### Input Json format 2
+### Input Format
 ```json
 [
-    "../../task1/common/test/2018-05-25_16-22-29-018.bmp",
-    "../../task1/common/test/2018-05-25_16-22-29-685.bmp"
-]
+    {
+        "file": "img1.bmp",
+        "gps": [[12, 12], [321, 432]],
+        "pixels": [[12, 12], [2250, 3213]]
+    },
+    {
+        "file": "img2.bmp",
+        "gps": [[14232, 14232]],
+        "pixels": [[12, 12]]
+    }
+] 
 ```
-
 
 ### Output Json
 
 ```json
-{
-    "test/2018-05-25_16-22-29-018_flat.bmp": [123.0, 123.0],
-    "test/2018-05-25_16-22-29-018_flat_1.bmp": [23.0, 123.0],
-    "test/2018-05-25_16-22-29-018_flat_2.bmp": [111.0, 232.0],
-    "test/2018-05-25_16-22-29-685_flat.bmp": [111.0, 232.0]
-}
+[
+    {
+        "file": "img1_flat.bmp",
+        "gps": [12, 12],
+        "dims": [20.0, 20.0]
+    },
+    {
+        "file": "img1_flat_1.bmp",
+        "gps": [321, 432],
+        "dims": [20.0, 20.0]
+    },
+    {
+        "file": "img2.bmp",
+        "gps": [14232, 14232],
+        "dims": [12.0, 12.0]
+    }
+] 
 ```
 
 The first element in the list being the length of the smaller edge of the panel

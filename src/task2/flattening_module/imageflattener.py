@@ -1,12 +1,19 @@
 from tkinter import *
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Optional
 import nPTransform
-import numpy as np
-from imageprocessor import ImageProcessor, JsonFormatError
-import argparse
-import os
-import json
 
+import numpy as np
+import argparse
+import json
+from shapely.geometry.point import Point
+from shapely.geometry.polygon import Polygon
+
+# adds image the imageprocessor to the sys.path so that we can import it
+import os
+import sys
+_script_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(os.path.join(_script_path, os.pardir), 'common'))
+from imageprocessor import Panel, ImageProcessor, JsonFormatError
 
 DOT_SIZE = 10
 PANEL_MARKER_COLOUR = 'blue'
@@ -25,18 +32,19 @@ class ImageFlattener(ImageProcessor):
     saved: a list of the path to all of the _saved images
     """
     # === Private Attributes ===
-    __panels_in: Dict[str, List[Tuple[int, int]]]  # a dictionary whose
-    # keys are absolute paths to the images and whose values are a list of pixel
-    #  cords of panels in said images.
-    __dim: Tuple[int, int]
-    __saved: Dict[str, Tuple[int, int]]
-    __clicks: List[Tuple[int, int]]  # the clicks
+    __panels_in: Dict[str, List[Panel]]  # a dictionary whose
+    # keys are absolute paths to the images and whose values are a list panels
+    # in those images.
+    __selected_panel: Optional[Panel]
+    __saved: List[Panel]
+    __last_dims: Optional[Tuple[int, int]]
+    __clicks: List[Tuple[int, int]]  # position of clicks on the canvas since
     # that have been made on the canvas since last reload
-    __imgs_flattened: bool  # the is the current image a flattened panel
+    __imgs_flattened: bool  # is the current image a of a flattened panel
     __num_saved: int  # the number of panels saved during while processing one
     # image
 
-    def __init__(self, master: Tk, panels_in: Dict[str, List[Tuple[int, int]]],
+    def __init__(self, master: Tk, panels_in: Dict[str, List[Panel]],
                  save_to: str):
         """
         :param master: The root for this Tk window
@@ -46,11 +54,11 @@ class ImageFlattener(ImageProcessor):
         :param save_to: The path to the folder to save images to.
         """
         self.__panels_in = panels_in
-        self._img_flattened = False
         self.__num_saved = 0
-        self.__dim = None
+        self.__selected_panel = None
+        self.__last_dims = None
         self.__clicks = []
-        self.__saved = dict()
+        self.__saved = []
 
         # Toolbar
         toolbar = Frame(master)
@@ -64,24 +72,18 @@ class ImageFlattener(ImageProcessor):
         save_button.pack(side=LEFT, padx=2, pady=2)
         next_button.pack(side=LEFT, padx=2, pady=2)
         toolbar.pack(side=TOP, fill=X)
-
         ImageProcessor.__init__(self, master, list(panels_in.keys()), save_to)
 
         self.movable_image.canvas.bind('<Button-1>', self.left_mouse_down)
-        self._master.after(200, self.reload)
 
     @property
-    def saved(self) -> Dict[str, Tuple[int, int]]:
+    def saved(self) -> List[Panel]:
         return self.__saved
-
-    @property
-    def dim(self) -> Tuple[int, int]:
-        return self.__dim
 
     def left_mouse_down(self, event):
         """Called whenever the left mouse is clicked on the image canvas"""
 
-        if self._img_flattened:
+        if self.__selected_panel is not None:
             return
 
         x, y = self.movable_image.win_to_canvas((event.x, event.y))
@@ -90,14 +92,15 @@ class ImageFlattener(ImageProcessor):
         # add tuple (x, y) to existing list
         self.__clicks.append((x, y))
 
-        if len(self.__clicks) >= 4:
-            self._img_flattened = True
+        if len(self.__clicks) == 4:
+            self.__selected_panel = self._get_panel_within_clicks()
             self._request_dims()
 
     def _flatten_img(self):
         """flatten the current img
 
         Precondition:
+        self.__selected_panel is not None
         len(self._clicks) == 4
         """
         assert len(self.__clicks) == 4
@@ -109,8 +112,8 @@ class ImageFlattener(ImageProcessor):
 
         flat = nPTransform.four_points_correct_aspect(self.movable_image.cv_img,
                                                       rect,
-                                                      self.dim[0],
-                                                      self.dim[1])
+                                                      self.__selected_panel.dims[0],
+                                                      self.__selected_panel.dims[1])
 
         self.movable_image.cv_img = flat
         self.movable_image.reset()
@@ -118,38 +121,76 @@ class ImageFlattener(ImageProcessor):
 
         self.__clicks = []
 
+    def _get_panel_within_clicks(self) -> Panel:
+        """returns the most central panel within the bounds of the clicked area of a panel
+        with all attributes set to None if no such panel exists.
+
+        Precondition:
+        len(self.__clicks) == 4
+        """
+        if any(p.pixel is None for p in self.__panels_in[self.curr_path]):
+            return Panel(None, None)
+
+        bounds = Polygon([self.movable_image.canvas_to_cv(click) for click
+                          in self.__clicks])
+
+        panels_in_bounds = []
+
+        for panel in self.__panels_in[self.curr_path]:
+            p = Point(panel.pixel)
+            print(panel.pixel)
+            print(self.__clicks)
+            if p.within(bounds):
+                panels_in_bounds.append(panel)
+
+        if panels_in_bounds == []:
+            return Panel(None, None)
+        else:
+            min_dist_to_center = None
+            closest_to_center = None
+            for panel in panels_in_bounds:
+                dist_to_center = Point(panel.pixel).distance(bounds.centroid)
+                if min_dist_to_center is None or dist_to_center < min_dist_to_center:
+                    min_dist_to_center = dist_to_center
+                    closest_to_center = panel
+
+            return closest_to_center
+
     def _make_panel_dots(self):
         """place dots that mark panels onto screen"""
-        for panel_point in self.__panels_in[self.curr_path]:
-            self.movable_image.make_dot(PANEL_MARKER_COLOUR,
-                                        self.movable_image.cv_to_canvas(panel_point),
-                                        DOT_SIZE)
+        for panel in self.__panels_in[self.curr_path]:
+            if panel not in self.saved and panel.pixel is not None:
+                self.movable_image.make_dot(PANEL_MARKER_COLOUR,
+                                            self.movable_image.cv_to_canvas(panel.pixel),
+                                            DOT_SIZE)
 
     def reload(self):
         """Overrides because we need to reset img_flattened, add panel markers
         and remove dots"""
         ImageProcessor.reload(self)
-        self._img_flattened = False
+        self.__selected_panel = None
         self.__clicks = []
         self._make_panel_dots()
 
     def next_file(self):
         """Runs when next button pressed saves image to save_to with prefix
         'flat' and loads the next image"""
-        self._img_flattened = False
+        self.__selected_panel = None
         self.__num_saved = 0
         self.load_next_img_or_end()
 
     def save(self):
         """Save the current image"""
-        if self._img_flattened:
+        if self.__selected_panel is not None:
             if self.__num_saved > 0:
                 path = self.save_img_to_folder_with_extra(
                     f'_flat_{self.__num_saved}')
             else:
                 path = self.save_img_to_folder_with_extra(f'_flat')
-            self.__saved[path] = self.dim
+            self.__selected_panel.path = path
+            self.__saved.append(self.__selected_panel)
             self.__num_saved += 1
+            self.__selected_panel = None
             self.reload()
 
     def _request_dims(self):
@@ -161,12 +202,13 @@ class ImageFlattener(ImageProcessor):
         long_label.pack()
         long_entry = Entry(pop)
         long_entry.pack()
-        short_labe = Label(pop, text='Sorter side (cm)')
-        short_labe.pack()
+        short_label = Label(pop, text='Sorter side (cm)')
+        short_label.pack()
         short_entry = Entry(pop)
         short_entry.pack()
 
-        def skip():
+        def use_last():
+            self.__selected_panel.dims = self.__last_dims
             pop.destroy()
             self._flatten_img()
 
@@ -185,52 +227,64 @@ class ImageFlattener(ImageProcessor):
                 print('That\'s not a number.')
                 return
 
-            self.__dim = (short, long)
-
+            if self.__selected_panel is None:
+                print("No panel is selected")
+                pop.destroy()
+            self.__selected_panel.dims = (short, long)
+            self.__last_dims = (short, long)
             pop.destroy()
             self._flatten_img()
 
         done_button = Button(pop, text='Done', command=done)
         done_button.pack(side=LEFT)
 
-        if self.dim is not None:
+        if self.__last_dims is not None:
             skip_button = Button(pop, text='Use Last',
-                                 command=skip)
+                                 command=use_last)
             skip_button.pack(side=LEFT)
 
         pop.mainloop()
 
 
-def _parse_input(images_input: any) -> Dict[str, List[Tuple[int, int]]]:
+def parse_input(images_input: any) -> Dict[str, List[Panel]]:
     """Attempts to parse input from either list or dictionary if input is
     bad will throw useful errors"""
-
     panels_in = dict()
+    if not isinstance(images_input, list):
+        raise JsonFormatError('Json should be formatted like a list')
 
-    if isinstance(images_input, dict):
-        for key in images_input:
-            if isinstance(images_input[key], list):
-                panels_in[key] = []
-                for point in images_input[key]:
-                    if isinstance(point, list) \
-                       and len(images_input[key]) == 2 \
-                       and isinstance(point[0], int) \
-                       and isinstance(point[1], int):
+    for image_listing in images_input:
+        if ('file' not in image_listing or
+            'gps' not in image_listing or
+                'pixels' not in image_listing):
+            raise JsonFormatError('All items must contain a \"file\", \
+                                  \"gps\" and \"pixle\" keys.')
 
-                        panels_in[key] = tuple(images_input[key])
+        file = image_listing['file']
+        gpss = image_listing['gps']
+        pixels = image_listing['pixels']
 
-                    else:
+        print(file, gpss, pixels)
 
-                        raise JsonFormatError('lists should contain lists of ints\
-                                              of len 2')
+        if not isinstance(file, str):
+            raise JsonFormatError('File must be string')
+        if not isinstance(gpss, list) or not isinstance(pixels, list) or \
+           len(gpss) != len(pixels):
+            raise JsonFormatError('\"gps\" and \"pixel\" should be a list \
+                                   of the same length')
+
+        for gps, pixel in zip(gpss, pixels):
+            if len(gps) != 2:
+                raise JsonFormatError('All items in \"gps\" must be len 2')
+            if len(pixel) != 2:
+                raise JsonFormatError('All items in \"pixel\" must be len 2')
+
+            if file in panels_in:
+                panels_in[file].append(Panel(gps, pixel))
             else:
-                raise JsonFormatError("Json values should be lists")
-    elif isinstance(images_input, list):
-        for key in images_input:
-            panels_in[key] = []
-    else:
-        raise JsonFormatError('Json should be formatted like a list or dict')
-
+                panels_in[file] = [Panel(gps, pixel)]
+        if gpss == [] or pixels == []:
+            panels_in[file] = [Panel(None, None)]
     return panels_in
 
 
@@ -254,7 +308,7 @@ if __name__ == '__main__':
     with open(arg.input) as input_json:
         images_input = json.load(input_json)
 
-    panels_in = _parse_input(images_input)
+    panels_in = parse_input(images_input)
 
     flattener = ImageFlattener(master, panels_in, arg.output)
 
@@ -263,5 +317,15 @@ if __name__ == '__main__':
     if not os.path.exists(arg.output):
         os.makedirs(arg.output)
 
+    output_list = []
+
+    for panel in flattener.saved:
+        panel_dict = dict()
+        panel_dict['pixel'] = panel.pixel
+        panel_dict['file'] = panel.path
+        panel_dict['gps'] = panel.gps
+        panel_dict['dims'] = panel.dims
+        output_list.append(panel_dict)
+
     with open(os.path.join(arg.output, 'result.json'), 'w') as outfile:
-        json.dump(flattener.saved, outfile)
+        json.dump(output_list, outfile)
