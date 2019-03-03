@@ -4,47 +4,6 @@ import math
 
 
 
-
-
-#set threshold of deleting the gps location
-
-
-#setting command lines. h is height of the image, w is width of the image
-input_json_file=sys.argv[1]
-output_json_file=sys.argv[2]
-h=int(sys.argv[3])
-w=int(sys.argv[4])
-threshold=float(sys.argv[5])
-
-
-
-#extracting json info
-with open(input_json_file) as file:
-   input_data=json.load(file)
-
-
-panels=set()
-i=0
-for files in input_data:
-   for gps_num in range(0,len(files["gps"]),1):
-      panels.add(((files["gps"][gps_num][0], files["gps"][gps_num][1]), (files["pixels"][gps_num][0], files["pixels"][gps_num][1]), files["file"]))
-
-
-
-visited=set()
-centers=set()
-
-
-
-
-
-
-
-
-
-
-
-
 # #calculate distance between two gps locations
 def dist(a,b):
    #pythagorean therom
@@ -73,29 +32,45 @@ def calc_most_central(in_group):
       return cen
 
 
+
+
+#setting command lines. h is height of the image, w is width of the image
+input_json_file=sys.argv[1]
+output_json_file=sys.argv[2]
+h=int(sys.argv[3])
+w=int(sys.argv[4])
+#set threshold of deleting the gps location
+threshold=float(sys.argv[5])
+
+#extracting json info
+with open(input_json_file) as file:
+   input_data=json.load(file)
+
+#create three empty sets
+panels=set()
+visited=set()
+centers=set()
+
+
+for files in input_data:
+   for gps_num in range(0,len(files["gps"]),1):
+      panels.add(((files["gps"][gps_num][0], files["gps"][gps_num][1]), (files["pixels"][gps_num][0], files["pixels"][gps_num][1]), files["file"]))
+
+
+
 ##go through all the panels and put the ones with close gps index in a group
 for panel_1 in panels:
-
    if panel_1 not in visited:
       visited.add(panel_1)
       group=set()
       group.add(panel_1)
-
       for panel_2 in panels:
          if ((panel_2 not in visited) and (dist(panel_1[0], panel_2[0]) < threshold)):
             group.add(panel_2)
-
-
-
    #find the most central one in the group
    temp=calc_most_central(group)
-
    #add to centers, if it doesn't exist in centers
    centers=centers|temp
-
-
-
-
 
 json_entery_for = dict()
 
@@ -106,12 +81,13 @@ for centergps in centers:
       json_entery_for[path]['gps']=(json_entery_for[path]['gps'],)+(gps,)
       json_entery_for[path]['pixels']=(json_entery_for[path]['pixels'],)+(pixels,)
 
-
    # create a path called "image path", put json output in it
    else:
       json_entery_for[path] = {'file': path, 'gps': gps, 'pixels': pixels}
 
    final_json = list(json_entery_for.values())
+
+
 
 with open(output_json_file, 'w', encoding='utf8') as outfile:
    json.dump(final_json,outfile)
