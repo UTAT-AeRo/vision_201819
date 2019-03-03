@@ -1,8 +1,10 @@
 import sys
 import json
 import math
-import copy
-import cv2
+
+
+
+
 
 #set threshold of deleting the gps location
 
@@ -13,12 +15,34 @@ output_json_file=sys.argv[2]
 h=int(sys.argv[3])
 w=int(sys.argv[4])
 threshold=float(sys.argv[5])
-#output_json_file=sys.argv[2]
+
 
 
 #extracting json info
 with open(input_json_file) as file:
    input_data=json.load(file)
+
+
+panels=set()
+i=0
+for files in input_data:
+   for gps_num in range(0,len(files["gps"]),1):
+      panels.add(((files["gps"][gps_num][0], files["gps"][gps_num][1]), (files["pixels"][gps_num][0], files["pixels"][gps_num][1]), files["file"]))
+
+
+
+visited=set()
+centers=set()
+
+
+
+
+
+
+
+
+
+
 
 
 # #calculate distance between two gps locations
@@ -27,58 +51,67 @@ def dist(a,b):
    result=math.sqrt((a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1]))
    return result
 
-#gps coordinate with most central pixel
-# input will be [[file#,gps#],[file#,gps#]]; output will be[file#,gps#]
-def calc_most_central(in_ggps):
+
+# input will be a set of tuples: {((12,34),(23,23),"image1"),((4543,23),(34,65),"image2")}
+# output will be only one:{((12,34),(23,23),"image1")}
+def calc_most_central(in_group):
    #if there's only one grouped gps location
-   if len(in_ggps)==1:
-      return in_ggps[0]
+   if len(in_group)==1:
+      return in_group
    else:
-      #creating a list of central_coefficient for each gps locations
-      cen_c=[]
-      for i in range(0,len(in_ggps),1):
-         #extract image size from input_data[file#][file_name]; h:height,w:width
+
+      cen=set()
+      #set a large max dist, so the first dist always overwrite this
+      maxdist=999999
+      for gps in in_group:
+         dist = math.sqrt((h / 2 - gps[1][1]) * (h / 2 - gps[1][1]) + (w / 2 - gps[1][0]) * (w / 2 - gps[1][0]))
+         if dist<maxdist:
+            maxdist=dist
+            cen={gps}
 
 
-         #calculate distance
-         pixel=input_data[in_ggps[i][0]]["pixels"][in_ggps[i][1]]
-         dist=math.sqrt((h/2-pixel[0])*(h/2-pixel[0])+(w/2-pixel[1])*(w/2-pixel[1]))
-         area=pixel[0]*pixel[1]
-         cen_c=cen_c+[dist/area]
-      mc_index=cen_c.index(min(cen_c))
-      return in_ggps[mc_index]
+      return cen
+
+
+##go through all the panels and put the ones with close gps index in a group
+for panel_1 in panels:
+
+   if panel_1 not in visited:
+      visited.add(panel_1)
+      group=set()
+      group.add(panel_1)
+
+      for panel_2 in panels:
+         if ((panel_2 not in visited) and (dist(panel_1[0], panel_2[0]) < threshold)):
+            group.add(panel_2)
 
 
 
-final_json = copy.deepcopy(input_data)
-#loop for first picture file
-for fp_i in range(0, (len(input_data)) - 1, 1):
-#loop for first picture gps locations in the file
-   for fp_gps_i in range(0, len(input_data[fp_i]["gps"])):
-      grouped_gps=[[fp_i, fp_gps_i]]
-#loop for second picture file
-      for sp_i in range((fp_i) + 1, len(input_data)):
-#loop for second picture gps locations in the file
-         for sp_gps_i in range(0, len(input_data[sp_i]["gps"])):
-            if dist(input_data[fp_i]["gps"][fp_gps_i], input_data[sp_i]["gps"][sp_gps_i])<threshold:
-               grouped_gps=grouped_gps+[[sp_i, sp_gps_i]]
+   #find the most central one in the group
+   temp=calc_most_central(group)
 
-      #remove the most central from grouped gps
-      most_central=calc_most_central(grouped_gps)
-      grouped_gps.remove(most_central)
-      #set duplicated gps location and pixel in final json file to zero. grouped gps looks like[[file#,gps#],[file#,gps#]]
-      for duplicated_gps in grouped_gps:
-         final_json[duplicated_gps[0]]["gps"][duplicated_gps[1]]=0
-         final_json[duplicated_gps[0]]["pixels"][duplicated_gps[1]] = 0
+   #add to centers, if it doesn't exist in centers
+   centers=centers|temp
 
 
-def remove_values_from_list(the_list, val):
-   return [value for value in the_list if value != val]
-#remove zeros from final_json
-for file_num in range(0,len(final_json),1):
-   final_json[file_num]["gps"]=remove_values_from_list(final_json[file_num]["gps"],0)
-   final_json[file_num]["pixels"]=remove_values_from_list(final_json[file_num]["pixels"],0)
 
+
+
+json_entery_for = dict()
+
+for centergps in centers:
+   (gps, pixels, path) = centergps
+   # concatenate gps and pixels
+   if path in json_entery_for:
+      json_entery_for[path]['gps']=(json_entery_for[path]['gps'],)+(gps,)
+      json_entery_for[path]['pixels']=(json_entery_for[path]['pixels'],)+(pixels,)
+
+
+   # create a path called "image path", put json output in it
+   else:
+      json_entery_for[path] = {'file': path, 'gps': gps, 'pixels': pixels}
+
+   final_json = list(json_entery_for.values())
 
 with open(output_json_file, 'w', encoding='utf8') as outfile:
    json.dump(final_json,outfile)
