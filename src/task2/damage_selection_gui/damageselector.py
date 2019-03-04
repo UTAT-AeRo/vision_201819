@@ -12,8 +12,6 @@ import os
 import sys
 _script_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(os.path.join(_script_path, os.pardir), 'common'))
-
-print(sys.path[-1])
 from imageprocessor import Panel, ImageProcessor, JsonFormatError
 
 # Defaults for args
@@ -165,42 +163,45 @@ class DamageSelector(ImageProcessor):
             self._draw_line_on_cv_from_last_click((x, y))
             self.__clicks.append((x, y))
 
-            if len(self.__clicks) >= 4:
-                self._draw_line_on_cv_from_last_click(self.__clicks[0])
+            if len(self.__clicks) < 4:
+                return
 
-                print('Side 1:', self._dist(self.__clicks[0],
-                                            self.__clicks[1]) * self.px_size(),
-                      'cm')
-                print('Side 2:', self._dist(self.__clicks[1],
-                                            self.__clicks[2]) * self.px_size(),
-                      'cm')
-                print('Side 3:', self._dist(self.__clicks[2],
-                                            self.__clicks[3]) * self.px_size(),
-                      'cm')
-                print('Side 4:', self._dist(self.__clicks[3],
-                                            self.__clicks[0]) * self.px_size(),
-                      'cm')
+            self._draw_line_on_cv_from_last_click(self.__clicks[0])
 
-                quadrangle = Polygon(self.__clicks)
+            print('Side 1:', self._dist(self.__clicks[0],
+                                        self.__clicks[1]) * self.px_size(),
+                  'cm')
+            print('Side 2:', self._dist(self.__clicks[1],
+                                        self.__clicks[2]) * self.px_size(),
+                  'cm')
+            print('Side 3:', self._dist(self.__clicks[2],
+                                        self.__clicks[3]) * self.px_size(),
+                  'cm')
+            print('Side 4:', self._dist(self.__clicks[3],
+                                        self.__clicks[0]) * self.px_size(),
+                  'cm')
 
-                print('Area:', quadrangle.area * self.px_size() ** 2, 'cm^2')
+            quadrangle = Polygon(self.__clicks)
 
-                self.enter_default_state()
+            print('Area:', quadrangle.area * self.px_size() ** 2, 'cm^2')
+
+            self.enter_default_state()
         elif self.__state == State.CIRCLE:
 
             self._draw_circle_on_cv_from_last_click((x, y))
             self._draw_line_on_cv_from_last_click((x, y))
             self.__clicks.append((x, y))
 
-            if len(self.__clicks) >= 2:
+            if len(self.__clicks) < 2:
+                return
 
-                radius = self._dist(self.__clicks[0], self.__clicks[1])
+            radius = self._dist(self.__clicks[0], self.__clicks[1])
 
-                print('Radius:', radius)
+            print('Radius:', radius)
 
-                print('Area:', np.pi * (radius ** 2))
+            print('Area:', np.pi * (radius ** 2))
 
-                self.enter_default_state()
+            self.enter_default_state()
 
     def _draw_line_on_cv_from_last_click(self, point):
         """Draws a line from the last point in the clicks list to a point on
