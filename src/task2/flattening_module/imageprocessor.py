@@ -1,6 +1,6 @@
 from tkinter import *
 import cv2
-from typing import List, Dict, Tuple
+from typing import List
 import os
 import sys
 _script_path = os.path.dirname(os.path.realpath(__file__))
@@ -23,7 +23,6 @@ class ImageProcessor:
     _save_to: str  # the path to which the images will be saved
     _paths: List[str]  # A list of all images to be loaded
     _canvas: Canvas
-    _master: Tk
 
     def __init__(self, master: Tk, paths: List[str], save_to: str):
         """
@@ -42,7 +41,6 @@ class ImageProcessor:
         self.movable_image.canvas.bind("<1>",
                                        lambda event: self.movable_image.focus_set)
         self.movable_image.focus_set()
-        self._master.after(200, self.reload)
 
     @property
     def save_to(self):
@@ -96,23 +94,6 @@ class ImageProcessor:
         self.movable_image.set_from_path(self.curr_path)
         self.movable_image.reset()
         self.movable_image.clear_dots()
-
-
-class Panel:
-    gps: Tuple[float, float]
-    pixel: Tuple[int, int]
-    dims: Tuple[int, int]
-    path: str
-
-    def __init__(self, gps, pixel, dims=None, path=None):
-        self.gps = gps
-        self.pixel = pixel
-        self.dims = dims
-        self.path = path
-
-    def __eq__(self, other):
-        return self.pixel == other.pixel \
-               and self.gps == other.gps
 
 
 class JsonFormatError(Exception):

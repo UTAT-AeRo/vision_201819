@@ -90,7 +90,7 @@ class ImageFlattener(ImageProcessor):
         self.movable_image.make_dot(CORNER_COLOUR, (x, y), DOT_SIZE)
 
         # add tuple (x, y) to existing list
-        self.__clicks.append(self.movable_image.canvas_to_cv((x, y)))
+        self.__clicks.append((x, y))
 
         if len(self.__clicks) == 4:
             self.__selected_panel = self._get_panel_within_clicks()
@@ -105,7 +105,10 @@ class ImageFlattener(ImageProcessor):
         """
         assert len(self.__clicks) == 4
         # convert clicks to an np array
-        rect = np.asarray([np.asarray(np.float32(p)) for p in self.__clicks])
+        rect = np.asarray([np.asarray(
+                           np.float32(
+                           self.movable_image.canvas_to_cv(p)))
+                           for p in self.__clicks])
 
         flat = nPTransform.four_points_correct_aspect(self.movable_image.cv_img,
                                                       rect,
@@ -128,12 +131,15 @@ class ImageFlattener(ImageProcessor):
         if any(p.pixel is None for p in self.__panels_in[self.curr_path]):
             return Panel(None, None)
 
-        bounds = Polygon(self.__clicks)
+        bounds = Polygon([self.movable_image.canvas_to_cv(click) for click
+                          in self.__clicks])
 
         panels_in_bounds = []
 
         for panel in self.__panels_in[self.curr_path]:
             p = Point(panel.pixel)
+            print(panel.pixel)
+            print(self.__clicks)
             if p.within(bounds):
                 panels_in_bounds.append(panel)
 
