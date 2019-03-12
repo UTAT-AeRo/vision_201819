@@ -74,7 +74,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # Launches the auto filter module and pipes the output into the current terminal
     def launchAutoFilterModule(self):
         runModule("Module 1 Auto Filtering",
-                  "python3 ../filter-module/detect.py -i " + self.dir + " -f " + autoFilterOutputPath)
+                  "python3 ../filter_module/detect.py -i \"" + self.dir + "\" -f " + autoFilterOutputPath)
 
     # Launches the manual filter module and pipes the output into the current terminal
     def launchManualFilterModule(self):
@@ -84,7 +84,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # Launches the IR location module and pipes the output into the current terminal
     def launchLocateIRModule(self):
         runModule("Module 3 Locate IR",
-                  "python3 ../mark-damaged-module/markergui.py -i " + manualFilterOutputPath + " -f " + irLocateOutputPath)
+                  "python3 ../mark_damaged_module/markergui.py -i " + manualFilterOutputPath + " -f " + irLocateOutputPath)
 
     # Launches the point plotting module
     def launchPlottingModule(self):
