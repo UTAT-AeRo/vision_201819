@@ -8,6 +8,8 @@ from skimage import measure
 import numpy as np
 from matplotlib import pyplot as plt
 
+IMAGE_FORMATS = ('.bmp', '.jpg', '.png')
+
 # Show image (for debugging)
 def show_img(image):
     cv2.imshow('img',image)
@@ -69,7 +71,8 @@ def run(input_dir, output_dir):
             rel_out_path = None
             if output_dir is not None:
                 rel_out_path = os.path.join(output_dir, f)
-            img = process_img(rel_path)
+            if rel_out_path.lower().endswith(IMAGE_FORMATS):
+                img = process_img(rel_path)
             if img is not None:
                 pos_images.append(os.path.abspath(rel_path))
                 if rel_out_path is not None:
