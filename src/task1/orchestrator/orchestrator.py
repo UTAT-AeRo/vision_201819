@@ -94,10 +94,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 # Runs a module and pipes the output to the current terminal
 def runModule(title, cmd):
+    runningDialog()
     print("\n\n\n\n\n\n=== " + title + " ===")
     os.system(cmd)
     print("=== Output End ===\n\n\n\n\n\n")
-    runningDialog()
 
 # Given a QWidgetLabel, this function will update it to Completed and change the colour to green
 def updateTextCompletedGreen(label):
@@ -109,9 +109,10 @@ def runningDialog():
     msg = QtWidgets.QMessageBox()
     msg.setIcon(QtWidgets.QMessageBox.Information)
 
-    msg.setText("The module is running")
-    msg.setInformativeText("Please check the terminal for module output")
-    msg.setWindowTitle("Running")
+    msg.setText("The module is about to run")
+    msg.setInformativeText("Please check the terminal for module output. The GUI will not respond until the module is "
+                           "complete. Press OK to start.")
+    msg.setWindowTitle("About to start")
     msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
     msg.exec_()
 
