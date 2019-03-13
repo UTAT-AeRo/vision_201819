@@ -72,12 +72,18 @@ def run(input_dir, output_dir):
             rel_out_path = None
             if output_dir is not None:
                 rel_out_path = os.path.join(output_dir, f)
-            if rel_path.lower().endswith(IMAGE_FORMATS):
+
+            if not rel_path.lower().endswith(IMAGE_FORMATS):
+                continue
+
+            try:
                 img = process_img(rel_path)
                 if img is not None:
                     pos_images.append(os.path.abspath(rel_path))
                     if rel_out_path is not None:
                         cv2.imwrite(rel_out_path, img)
+            except Exception as e:
+                print("ERROR - ", e)
     return pos_images
 
 # Run
