@@ -30,6 +30,7 @@ def auto_canny(image, sigma=0.33):
 
 # Detect whether there exists a spot bright enough
 def process_img(file_name):
+    print(file_name)
     image = cv2.imread(file_name)
     # Blur and smooth
     smoothed_image = cv2.bilateralFilter(image, 20, 50, 200)
@@ -39,11 +40,11 @@ def process_img(file_name):
     preprocessed_img = cv2.dilate(preprocessed_img, None, iterations=4)
     preprocessed_img = cv2.erode(preprocessed_img, None, iterations=2)
     filtered_img = auto_canny(preprocessed_img)
-    # Draw circle
-    cnts = cv2.findContours(filtered_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+    # # Draw circle
+    # cnts = cv2.findContours(filtered_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
-    return image
+    return filtered_img
 
     # if cnts is not None and len(cnts) > 0:
     #     cnts = contours.sort_contours(cnts)[0]
@@ -71,12 +72,18 @@ def run(input_dir, output_dir):
             rel_out_path = None
             if output_dir is not None:
                 rel_out_path = os.path.join(output_dir, f)
-            if rel_out_path.lower().endswith(IMAGE_FORMATS):
+
+            if not rel_path.lower().endswith(IMAGE_FORMATS):
+                continue
+
+            try:
                 img = process_img(rel_path)
-            if img is not None:
-                pos_images.append(os.path.abspath(rel_path))
-                if rel_out_path is not None:
-                    cv2.imwrite(rel_out_path, img)
+                if img is not None:
+                    pos_images.append(os.path.abspath(rel_path))
+                    if rel_out_path is not None:
+                        cv2.imwrite(rel_out_path, img)
+            except Exception as e:
+                print("ERROR - ", e)
     return pos_images
 
 # Run
