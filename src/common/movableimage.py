@@ -105,21 +105,24 @@ class MovableImage:
             dims = (h, w)
 
         cBR = self.win_to_canvas(dims)
-        self.__im_bot_right = self._canvas.create_oval((cBR[0],
+        print("Dims", dims)
+        print("cBR", cBR)
+        self.__im_bot_right = self._canvas.create_oval((cBR[1],
                                                         cBR[0],
                                                         cBR[1],
-                                                        cBR[1]),
+                                                        cBR[0]),
                                                        tags='corners',
                                                        fill='purple',
                                                        state=HIDDEN)
         cTL = self.win_to_canvas((0, 0))
-        self.__im_top_left = self._canvas.create_oval((cTL[0],
+        self.__im_top_left = self._canvas.create_oval((cTL[1],
                                                        cTL[0],
                                                        cTL[1],
-                                                       cTL[1]),
+                                                       cTL[0]),
                                                       tags='corners',
                                                       fill='green',
                                                       state=HIDDEN)
+        print(self._get_im_bounds())
 
     @property
     def canvas(self):
@@ -274,8 +277,8 @@ class MovableImage:
     def _get_im_bounds(self):
         """The bounding box of the image in canvas cords"""
         top_left = self._canvas.coords(self.__im_top_left)
-        center = self._canvas.coords(self.__im_bot_right)
-        return tuple(top_left[:2] + center[:2])
+        bottom_right = self._canvas.coords(self.__im_bot_right)
+        return tuple(top_left[:2] + bottom_right[:2])
 
     def reset_scroll(self):
         """Reset scroll position"""
