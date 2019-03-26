@@ -7,16 +7,19 @@ were being viewed flat on.
 ### Usage
 ```
 usage: imageflattener.py [-h] [--input INPUT] [--output OUTPUT]
-                         [--dot_size DOT_SIZE]
+                         [--outputjson OUTPUTJSON] [--dot_size DOT_SIZE]
 
 Flatten a list of panels
 
 optional arguments:
-  -h, --help           show this help message and exit
-  --input INPUT        The path to the jason contain
-  --output OUTPUT      The folder to save output json and new images
-  --dot_size DOT_SIZE  The size of the dots used to mark and select panel
-                       corners.
+  -h, --help            show this help message and exit
+  --input INPUT         The path to the json containing the images
+  --output OUTPUT       The folder to save the new images and by default the
+                        json as well
+  --outputjson OUTPUTJSON
+                        The path to where the json will be saved
+  --dot_size DOT_SIZE   The size of the dots used to mark and select panel
+                        corners.
 ```
 
 Example Call
@@ -37,7 +40,7 @@ Example Call
         "gps": [[14232, 14232]],
         "pixels": [[12, 12]]
     }
-] 
+]
 ```
 
 ### Output Json
@@ -59,7 +62,7 @@ Example Call
         "gps": [14232, 14232],
         "dims": [12.0, 12.0]
     }
-] 
+]
 ```
 
 The first element in the list being the length of the smaller edge of the panel

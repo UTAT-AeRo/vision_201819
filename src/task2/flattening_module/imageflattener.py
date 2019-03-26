@@ -285,9 +285,10 @@ def parse_input(images_input: any) -> Dict[str, List[Panel]]:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Flatten a list of panels')
     parser.add_argument('--input', type=str,
-                        help='The path to the jason contain')
+                        help='The path to the json containing the images')
     parser.add_argument('--output', type=str,
-                        help='The folder to save output json and new images')
+                        help='The folder to save the new images and by default the json as well')
+    parser.add_argument('--outputjson', type=str, help='The path to where the json will be saved', default=None)
     parser.add_argument('--dot_size', type=int,
                         help='The size of the dots used to mark and select panel corners.',
                         default=10
@@ -321,5 +322,14 @@ if __name__ == '__main__':
         panel_dict['dims'] = panel.dims
         output_list.append(panel_dict)
 
-    with open(os.path.join(arg.output, 'result.json'), 'w') as outfile:
+    # make default save location for json same as path to images
+    if arg.outputjson is None:
+        outpath = arg.output
+    else:
+        outpath = arg.outputjson
+
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+
+    with open(os.path.join(outpath, 'result.json'), 'w') as outfile:
         json.dump(output_list, outfile)
