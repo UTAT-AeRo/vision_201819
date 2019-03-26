@@ -96,33 +96,34 @@ def drawTask1(window):
 
     # Module FlattenImages Button
     window.flattenImagesButton = QtWidgets.QPushButton("Flatten Images", window)
-    window.flattenImagesButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 100)
+    window.flattenImagesButton.clicked.connect(window.launchFlattenModule)
+    window.flattenImagesButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 150)
     setModuleButtonProperties(window.flattenImagesButton)
 
     # Module FlattenImages Label
     window.FlattenImagesLabel = QtWidgets.QLabel(window)
-    window.FlattenImagesLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 100)
+    window.FlattenImagesLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 150)
     setNotRunLabel(window.FlattenImagesLabel)
 
     # Remove Dup Img Butt
     window.removeDupButton = QtWidgets.QPushButton("Remove Duplicate Images", window)
-    window.removeDupButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 150)
-    window.removeDupButton.clicked.connect(window.launchPlottingModule)
+    window.removeDupButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 200)
+    window.removeDupButton.clicked.connect(window.launchRemoveDupModule)
     setModuleButtonProperties(window.removeDupButton)
 
     # Remove Dup Img Label
     window.removeDupLabel = QtWidgets.QLabel(window)
-    window.removeDupLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 150)
+    window.removeDupLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 200)
     setNotRunLabel(window.removeDupLabel)
 
     # Module AreaPercent Button
-    window.sortImagesButton = QtWidgets.QPushButton("Sort Images", window)
-    window.sortImagesButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 200)
+    window.sortImagesButton = QtWidgets.QPushButton("PLACEHOLDER", window)
+    window.sortImagesButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 250)
     setModuleButtonProperties(window.sortImagesButton)
 
     # Module AreaPercent Label
     window.sortImagesLabel = QtWidgets.QLabel(window)
-    window.sortImagesLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 200)
+    window.sortImagesLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 250)
     setNotRunLabel(window.sortImagesLabel)
 
     # Module 4 Button
