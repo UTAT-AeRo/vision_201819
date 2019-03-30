@@ -119,9 +119,9 @@ def clicked(event):
         second.grab_set()
         second.title("New Label")
 
+        #message box
         msg = tkinter.Message(second, justify = 'center', width = 300, text="Label at (lat,long) \n{}, {}".format(lat, long))
         msg.pack()
-
         t = tkinter.Text(second, height=5, width=40)
         t.pack()
 
@@ -129,7 +129,6 @@ def clicked(event):
         button.pack()
 
         second.protocol("WM_DELETE_WINDOW", delete)
-
         second.mainloop()
 
 
@@ -176,7 +175,6 @@ next = tkinter.Button(cycle, text="Next", command=next)
 next.pack()
 prev = tkinter.Button(cycle, text="Previous", command=prev)
 prev.pack()
-
 
 top.mainloop()
 cycle.mainloop()
