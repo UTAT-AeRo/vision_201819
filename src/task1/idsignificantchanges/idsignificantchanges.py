@@ -7,7 +7,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 #written by Alex Zhuang zhual@utschools.ca 2019/02/23
 
-global index, basewidth, out, cycle, cyclecanvas
+global index, basewidth, out, cycle, cyclecanvas, lat, long, second, canvas, t, point
 index = 0
 basewidth = 300
 out = {'damaged':[]}
@@ -65,6 +65,31 @@ def refresh(init = False):
     cyclecanvas.pack()
 
 
+def save():
+    """
+    Saves the lat, long, and label description for the selected point
+    """
+    global index, lat, long, second, t, point
+    desc = t.get("1.0", 'end-1c')
+    out['damaged'].append({'lat': lat,
+                            'long': long,
+                            'message': desc,
+                            'filename': inputsurveyphotos[index]})
+    print ("the current list of points is as follows:\n")
+    for each in out['damaged']:
+        print(each)
+    second.destroy()
+
+
+def delete():
+    global second, canvas, point
+    """
+    cancels the creation of a point by removing the red point
+    """
+    canvas.delete(point)
+    second.destroy()
+
+
 def clicked(event):
     """
     a click on the map triggers this function.
@@ -78,6 +103,7 @@ def clicked(event):
     -If save and quit is clicked, saves the point.
 
     """
+    global index, lat, long, second, t, point
     if (event.x >= 0 and event.x <= photo.width() and event.y >= 0 and event.y <= photo.height()):
         second = tkinter.Toplevel(width = 300)
 
@@ -93,25 +119,11 @@ def clicked(event):
         second.grab_set()
         second.title("New Label")
 
-        def delete():
-            canvas.delete(point)
-            second.destroy()
-
         msg = tkinter.Message(second, justify = 'center', width = 300, text="Label at (lat,long) \n{}, {}".format(lat, long))
         msg.pack()
 
         t = tkinter.Text(second, height=5, width=40)
         t.pack()
-
-        def save():
-            global index
-            desc = t.get("1.0", 'end-1c')
-            out['damaged'].append({'lat': lat,
-                                    'long': long,
-                                    'message': desc,
-                                    'filename': inputsurveyphotos[index]})
-            print (out)
-            second.destroy()
 
         button = tkinter.Button(second, text="Save and Quit", command=save)
         button.pack()
