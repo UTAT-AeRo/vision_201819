@@ -7,48 +7,77 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 #written by Alex Zhuang zhual@utschools.ca 2019/02/23
 
-parser = argparse.ArgumentParser(description='You must specify paths to two jsons')
-parser.add_argument("--map", help = 'valid path to the reference map json', type = str)
-parser.add_argument("--photos", help = 'valid path to the survey photos json', type = str)
-args = parser.parse_args()
-mappath = args.map
-photopath = args.photos
-
-with open(mappath, 'r') as f:
-    inputmap = json.load(f)
-with open(photopath, 'r') as f:
-    inputsurveyphotos = json.load(f)
-
-global index, basewidth, out
+global index, basewidth, out, cycle, cyclecanvas
 index = 0
 basewidth = 300
-
 out = {'damaged':[]}
 
+
 def output():
+    """
+    writes out the output json
+    """
     global out
     with open('idsignificantchanges.json', 'w') as outfile:
         json.dump(out, outfile)
     top.destroy()
 
 
-top = tkinter.Tk()
-top.protocol("WM_DELETE_WINDOW", output)
+def prev():
+    """
+    decrements image index within inputsurveyphotos list
+    """
+    global index
+    if (index >0):
+        index -=1
+        refresh()
 
 
-img = PIL.Image.open(inputmap['filename']);
-photo =PIL.ImageTk.PhotoImage(img)
+def next():
+    """
+    increments image index within inputsurveyphotos list
+    """
+    global index
+    if (index < len(inputsurveyphotos)-1):
+        index += 1
+        refresh()
 
-top.geometry('{}x{}'.format(photo.width(), photo.height()) )
 
-canvas = tkinter.Canvas(top, width = photo.width(), height = photo.height())
-canvas.create_image(0, 0, image=photo, anchor=tkinter.NW)
+def refresh(init = False):
+    """
+    Refresh the image in the image viewing window based on next or
+    previous buttons. Resizes images if too large.
 
-canvas.pack()
-
+    if init is true, the canvas must be canvas must be created.
+    """
+    global cycle, cyclecanvas
+    cycleimg = PIL.Image.open(inputsurveyphotos[index])
+    wpercent = (basewidth/float(cycleimg.size[0]))
+    hsize = int((float(cycleimg.size[1])*float(wpercent)))
+    cycleimg = cycleimg.resize((basewidth,hsize), PIL.Image.ANTIALIAS)
+    cyclephoto =PIL.ImageTk.PhotoImage(cycleimg)
+    cycle.cyclephoto = cyclephoto
+    cycle.geometry('{}x{}'.format(cyclephoto.width(), cyclephoto.height()+80))
+    if init == True:
+        cyclecanvas = tkinter.Canvas(cycle, width = cyclephoto.width(),
+                                            height = cyclephoto.height())
+    cyclecanvas.create_image(0, 0, image=cyclephoto, anchor=tkinter.NW)
+    cyclecanvas.pack()
 
 
 def clicked(event):
+    """
+    a click on the map triggers this function.
+
+    -checks if coordinates of click fit inside the image dimensions, to
+    ensure that we can calculate lat/long validly
+    -calculates lat, long based on relative position of click to the x
+    and y dimension.
+    -puts a red dot on map to mark labelled location
+    -pops up window to add description to lat, long value.
+    -If save and quit is clicked, saves the point.
+
+    """
     if (event.x >= 0 and event.x <= photo.width() and event.y >= 0 and event.y <= photo.height()):
         second = tkinter.Toplevel(width = 300)
 
@@ -91,43 +120,46 @@ def clicked(event):
 
         second.mainloop()
 
+
+#Argparse section
+parser = argparse.ArgumentParser(description='You must specify paths to two jsons')
+parser.add_argument("--map", help = 'valid path to the reference map json', type = str)
+parser.add_argument("--photos", help = 'valid path to the survey photos json', type = str)
+args = parser.parse_args()
+mappath = args.map
+photopath = args.photos
+
+#read paths provided by command line arguments e.g.
+#python idsignificantchanges.py --map=inputmap.json --photos=inputsurveyphotos.json
+with open(mappath, 'r') as f:
+    inputmap = json.load(f)
+with open(photopath, 'r') as f:
+    inputsurveyphotos = json.load(f)
+
+#Create tk instance and set it to output the json on window close.
+top = tkinter.Tk()
+top.protocol("WM_DELETE_WINDOW", output)
+
+#Open the map image and fit the window to the image dims
+img = PIL.Image.open(inputmap['filename']);
+photo =PIL.ImageTk.PhotoImage(img)
+top.geometry('{}x{}'.format(photo.width(), photo.height()) )
+
+#Place a canvas over the entire window
+canvas = tkinter.Canvas(top, width = photo.width(), height = photo.height())
+canvas.create_image(0, 0, image=photo, anchor=tkinter.NW)
+canvas.pack()
+
+#on left-click on canvas, label a point
 canvas.bind("<Button-1>", clicked)
-global cycle
+
+#Second tk window for viewing inputsurveyphotos images and cycling through
 cycle = tkinter.Toplevel()
-cycleimg = PIL.Image.open(inputsurveyphotos[index])
-wpercent = (basewidth/float(cycleimg.size[0]))
-hsize = int((float(cycleimg.size[1])*float(wpercent)))
-cycleimg = cycleimg.resize((basewidth,hsize), PIL.Image.ANTIALIAS)
-cyclephoto =PIL.ImageTk.PhotoImage(cycleimg)
-cycle.geometry('{}x{}'.format(cyclephoto.width(), cyclephoto.height()+80))
-cyclecanvas = tkinter.Canvas(cycle, width = cyclephoto.width(), height = cyclephoto.height())
-cyclecanvas.create_image(0, 0, image=cyclephoto, anchor=tkinter.NW)
-cyclecanvas.pack()
+#Window inialization
+init = True
+refresh(init)
 
-
-def refresh():
-    global cycle
-    cycleimg = PIL.Image.open(inputsurveyphotos[index])
-    wpercent = (basewidth/float(cycleimg.size[0]))
-    hsize = int((float(cycleimg.size[1])*float(wpercent)))
-    cycleimg = cycleimg.resize((basewidth,hsize), PIL.Image.ANTIALIAS)
-    cyclephoto =PIL.ImageTk.PhotoImage(cycleimg)
-    cycle.cyclephoto = cyclephoto
-    cycle.geometry('{}x{}'.format(cyclephoto.width(), cyclephoto.height()+80))
-    cyclecanvas.create_image(0, 0, image=cyclephoto, anchor=tkinter.NW)
-    cyclecanvas.pack()
-
-def prev():
-    global index
-    if (index >0):
-        index -=1
-        refresh()
-def next():
-    global index
-    if (index < len(inputsurveyphotos)-1):
-        index += 1
-        refresh()
-
+#Cycle between images in the list using next and previous buttons
 next = tkinter.Button(cycle, text="Next", command=next)
 next.pack()
 prev = tkinter.Button(cycle, text="Previous", command=prev)
