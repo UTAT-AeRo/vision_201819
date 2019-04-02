@@ -57,17 +57,19 @@ class MainWindow(QtWidgets.QMainWindow):
             self.locateIRButton.setEnabled(True)  # Locate IR Button unlock
             updateTextCompletedGreen(self.manualFilterLabel)
 
-        if os.path.isfile(irLocateOutputPath) and not self.flattenImagesButton.isEnabled():
-            self.flattenImagesButton.setEnabled(True)  # Flatten Image
+        if os.path.isfile(irLocateOutputPath) and not self.removeDupButton.isEnabled():
+            self.removeDupButton.setEnabled(True)  # Remove duplicate
             updateTextCompletedGreen(self.locateIRLabel)
 
-        if os.path.isfile(flattenedOutputFolder + "/result.json") and not self.removeDupButton.isEnabled():
-            self.removeDupButton.setEnabled(True)  # Remove duplicate
+        if os.path.isfile(removeDupOutputPath) and not self.flattenImagesButton.isEnabled():
+            self.flattenImagesButton.setEnabled(True)  # Flatten Image
+            updateTextCompletedGreen(self.removeDupLabel)
+
+        if os.path.isfile(flattenedOutputFolder + "/result.json") or os.path.isfile(idSigChangesOutputPath) and not self.plotButton.isEnabled():
+            self.plotButton.setEnabled(True)  # Plot Button unlock
             updateTextCompletedGreen(self.FlattenImagesLabel)
 
-        if os.path.isfile(removeDupOutputPath) or os.path.isfile(idSigChangesOutputPath) and not self.plotButton.isEnabled():
-            self.plotButton.setEnabled(True)  # Plot Button unlock
-            updateTextCompletedGreen(self.manualFilterLabel)
+
 
         if not self.exitRequested:
             threading.Timer(0.5, self.mainBGloop).start()
@@ -92,16 +94,16 @@ class MainWindow(QtWidgets.QMainWindow):
         runModule("Module 3 Locate IR",
                   "python3 ../mark_damaged_module/markergui.py -i " + manualFilterOutputPath + " -f " + irLocateOutputPath)
 
+    # Launches the remove duplicate module
+    def launchRemoveDupModule(self):
+        runModule("Module Remove Duplicates",
+                  "python3 ../remove_duplicated_image/remove_duplicated.py " + irLocateOutputPath + " " + removeDupOutputPath + " 5120 5120 1")
+
     # Launches the flattening module and pipes the output into the current terminal
     def launchFlattenModule(self):
         print("dsdssd")
         runModule("Module Flatten Images",
-                  "python3 ../../task2/flattening_module/imageflattener.py --input " + irLocateOutputPath + " --output " + flattenedOutputFolder)
-
-    # Launches the remove duplicate module
-    def launchRemoveDupModule(self):
-        runModule("Module Remove Duplicates",
-                  "python3 ../remove duplicated image/remove_duplicated.py " + flattenedOutputFolder + "/result.json" + " " + removeDupOutputPath + " 5120 5120 1")
+                  "python3 ../../task2/flattening_module/imageflattener.py --input " + removeDupOutputPath + " --output " + flattenedOutputFolder)
 
     # Launches the point plotting module
     def launchPlottingModule(self):

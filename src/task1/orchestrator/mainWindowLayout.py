@@ -97,23 +97,23 @@ def drawTask1(window):
     # Module FlattenImages Button
     window.flattenImagesButton = QtWidgets.QPushButton("Flatten Images", window)
     window.flattenImagesButton.clicked.connect(window.launchFlattenModule)
-    window.flattenImagesButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 150)
+    window.flattenImagesButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 200)
     setModuleButtonProperties(window.flattenImagesButton)
 
     # Module FlattenImages Label
     window.FlattenImagesLabel = QtWidgets.QLabel(window)
-    window.FlattenImagesLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 150)
+    window.FlattenImagesLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 200)
     setNotRunLabel(window.FlattenImagesLabel)
 
     # Remove Dup Img Butt
     window.removeDupButton = QtWidgets.QPushButton("Remove Duplicate Images", window)
-    window.removeDupButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 200)
+    window.removeDupButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 150)
     window.removeDupButton.clicked.connect(window.launchRemoveDupModule)
     setModuleButtonProperties(window.removeDupButton)
 
     # Remove Dup Img Label
     window.removeDupLabel = QtWidgets.QLabel(window)
-    window.removeDupLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 200)
+    window.removeDupLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 150)
     setNotRunLabel(window.removeDupLabel)
 
     # Module AreaPercent Button
