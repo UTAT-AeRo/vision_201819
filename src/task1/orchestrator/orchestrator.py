@@ -13,6 +13,7 @@ manualFilterOutputPath = jsondir + "manualfilter.json"
 irLocateOutputPath = jsondir + "irlocate.json"
 idSigChangesOutputPath = jsondir + "significantchanges.json"
 removeDupOutputPath = jsondir + "removeduplicates.json"
+sortOutputPath = jsondir + "sortimages.json"
 
 # Main Window
 class MainWindow(QtWidgets.QMainWindow):
@@ -65,11 +66,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.flattenImagesButton.setEnabled(True)  # Flatten Image
             updateTextCompletedGreen(self.removeDupLabel)
 
-        if os.path.isfile(flattenedOutputFolder + "/result.json") or os.path.isfile(idSigChangesOutputPath) and not self.plotButton.isEnabled():
+        if os.path.isfile(flattenedOutputFolder + "/result.json") and not self.sortImagesButton.isEnabled():
+            self.sortImagesButton.setEnabled(True)  # Sort Images
+            updateTextCompletedGreen(self.sortImagesLabel)
+
+        if os.path.isfile(sortOutputPath) or os.path.isfile(idSigChangesOutputPath) and not self.plotButton.isEnabled():
             self.plotButton.setEnabled(True)  # Plot Button unlock
             updateTextCompletedGreen(self.FlattenImagesLabel)
-
-
 
         if not self.exitRequested:
             threading.Timer(0.5, self.mainBGloop).start()
@@ -104,6 +107,12 @@ class MainWindow(QtWidgets.QMainWindow):
         print("dsdssd")
         runModule("Module Flatten Images",
                   "python3 ../../task2/flattening_module/imageflattener.py --input " + removeDupOutputPath + " --output " + flattenedOutputFolder)
+
+    # Launches the Sort damage module
+    def launchSortModule(self):
+        runModule("Module Sort Images",
+                  "python3 ../degree_damage_module/degree_dmg_gui.py -i " + flattenedOutputFolder + "/result.json" + " -f " + sortOutputPath)
+
 
     # Launches the point plotting module
     def launchPlottingModule(self):

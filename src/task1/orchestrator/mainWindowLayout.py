@@ -116,12 +116,12 @@ def drawTask1(window):
     window.removeDupLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 150)
     setNotRunLabel(window.removeDupLabel)
 
-    # Module AreaPercent Button
-    window.sortImagesButton = QtWidgets.QPushButton("PLACEHOLDER", window)
+    # Module Sort Images Button
+    window.sortImagesButton = QtWidgets.QPushButton("Sort Images", window)
     window.sortImagesButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 250)
     setModuleButtonProperties(window.sortImagesButton)
 
-    # Module AreaPercent Label
+    # Module Sort Images Label
     window.sortImagesLabel = QtWidgets.QLabel(window)
     window.sortImagesLabel.move(LEFT_LABEL_POS, FIRST_ROW_Y + 250)
     setNotRunLabel(window.sortImagesLabel)
