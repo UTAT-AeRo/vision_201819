@@ -21,7 +21,7 @@ optional arguments:
 
 Example Call
 
-```python flattener.py --input test.json --output test_folder```
+```python imageflattener.py --input test.json --output test_folder```
 
 
 ### Input Format

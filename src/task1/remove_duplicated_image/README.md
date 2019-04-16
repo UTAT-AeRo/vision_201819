@@ -10,7 +10,7 @@ If a panel is in multiple images then the entry for it should be kept in the ima
 - Python 3
 
 # Usage
-`python remove_duplicated.py in.json out.json height width threshold'
+`python remove_duplicated.py in.json out.json height width threshold`
 
 The height and width of the image should be both 5120.
 threshold is the threshold distance for two similar gps locations.

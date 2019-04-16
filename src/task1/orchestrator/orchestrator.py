@@ -7,10 +7,13 @@ import session
 
 # Constants
 jsondir = "./tmp/json/"
+flattenedOutputFolder = "./tmp/flattened"
 autoFilterOutputPath = jsondir + "autofilter.json"
 manualFilterOutputPath = jsondir + "manualfilter.json"
 irLocateOutputPath = jsondir + "irlocate.json"
 idSigChangesOutputPath = jsondir + "significantchanges.json"
+removeDupOutputPath = jsondir + "removeduplicates.json"
+sortOutputPath = jsondir + "sortimages.json"
 
 # Main Window
 class MainWindow(QtWidgets.QMainWindow):
@@ -55,13 +58,21 @@ class MainWindow(QtWidgets.QMainWindow):
             self.locateIRButton.setEnabled(True)  # Locate IR Button unlock
             updateTextCompletedGreen(self.manualFilterLabel)
 
-        if os.path.isfile(irLocateOutputPath) and not self.flattenImagesButton.isEnabled():
-            self.flattenImagesButton.setEnabled(True)  # Flatten Image
+        if os.path.isfile(irLocateOutputPath) and not self.removeDupButton.isEnabled():
+            self.removeDupButton.setEnabled(True)  # Remove duplicate
             updateTextCompletedGreen(self.locateIRLabel)
 
-        if os.path.isfile(irLocateOutputPath) and os.path.isfile(idSigChangesOutputPath) and not self.plotButton.isEnabled():
+        if os.path.isfile(removeDupOutputPath) and not self.flattenImagesButton.isEnabled():
+            self.flattenImagesButton.setEnabled(True)  # Flatten Image
+            updateTextCompletedGreen(self.removeDupLabel)
+
+        if os.path.isfile(flattenedOutputFolder + "/result.json") and not self.sortImagesButton.isEnabled():
+            self.sortImagesButton.setEnabled(True)  # Sort Images
+            updateTextCompletedGreen(self.sortImagesLabel)
+
+        if (os.path.isfile(sortOutputPath) or os.path.isfile(idSigChangesOutputPath)) and not self.plotButton.isEnabled():
             self.plotButton.setEnabled(True)  # Plot Button unlock
-            updateTextCompletedGreen(self.manualFilterLabel)
+            updateTextCompletedGreen(self.FlattenImagesLabel)
 
         if not self.exitRequested:
             threading.Timer(0.5, self.mainBGloop).start()
@@ -86,10 +97,28 @@ class MainWindow(QtWidgets.QMainWindow):
         runModule("Module 3 Locate IR",
                   "python3 ../mark_damaged_module/markergui.py -i " + manualFilterOutputPath + " -f " + irLocateOutputPath)
 
+    # Launches the remove duplicate module
+    def launchRemoveDupModule(self):
+        runModule("Module Remove Duplicates",
+                  "python3 ../remove_duplicated_image/remove_duplicated.py " + irLocateOutputPath + " " + removeDupOutputPath + " 5120 5120 1")
+
+    # Launches the flattening module and pipes the output into the current terminal
+    def launchFlattenModule(self):
+        print("dsdssd")
+        runModule("Module Flatten Images",
+                  "python3 ../../task2/flattening_module/imageflattener.py --input " + removeDupOutputPath + " --output " + flattenedOutputFolder)
+
+    # Launches the Sort damage module
+    def launchSortModule(self):
+        runModule("Module Sort Images",
+                  "python3 ../degree_damage_module/degree_dmg_gui.py -i " + flattenedOutputFolder + "/result.json" + " -f " + sortOutputPath)
+
+
     # Launches the point plotting module
     def launchPlottingModule(self):
-        runModule("Module 4 Plot points on map",
+        runModule("Module Plot points on map",
                   "python3 ../plot_pois/plot_pois.py -im ../map/map_coordinates.json -id " + irLocateOutputPath + " -pi ../plot_pois/pinpoint.png -ps 1")
+
 
 
 # Runs a module and pipes the output to the current terminal
