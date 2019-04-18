@@ -2,10 +2,9 @@
 """
 
 import pytest
-from hypothesis import given
-from hypothesis.strategies import floats
-from projection import ImageProjection
+from projection import ImageProjection, AltitudeError, OrientationError
 import math as m
+from unittest import TestCase
 
 
 def about(num1, num2, range) -> bool:
@@ -77,6 +76,15 @@ def test_due_east() -> None:
     assert about(point_ned_left_center[0], (altdrone / m.cos(pitch_r)) * m.tan(fov / 2), tol)   # North
     assert about(point_ned_left_center[1], altdrone * m.tan(pitch_r), tol)  # East
     assert about(point_ned_left_center[2], altdrone, tol)  # Down
+
+
+def test_out_of_bounds():
+    projector = ImageProjection()
+    with pytest.raises(OrientationError):
+        projector.get_pixel_coords((0, 0), 0, 0, 180, 0, 0, 10)
+    with pytest.raises(AltitudeError):
+        projector.get_pixel_coords((0, 0), 0, 0, 0, 0, 0, -10)
+
 
 
 if __name__ == '__main__':
