@@ -85,7 +85,8 @@ class MainWindow(QtWidgets.QMainWindow):
     # Launches the auto filter module and pipes the output into the current terminal
     def launchAutoFilterModule(self):
         runModule("Module 1 Auto Filtering",
-                  "python3 ../filter_module/detect.py -i \"" + self.dir + "\" -f " + autoFilterOutputPath)
+                  "python3 ../filter_module/detect.py -i \"" + self.dir +
+                  "\" -f " + autoFilterOutputPath + " -o \"" + jsondir + "\"")
 
     # Launches the manual filter module and pipes the output into the current terminal
     def launchManualFilterModule(self):
