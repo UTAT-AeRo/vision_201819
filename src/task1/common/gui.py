@@ -22,7 +22,7 @@ class Viewer:
 
         # Set top searchbar
         title_fr = Frame(self.top)
-        title_fr.pack(side='top', expand=1, fill='x', anchor='w')
+        title_fr.place(x=15,y=15)
         self.evar = StringVar()
         self.evar.set(os.path.basename(self.files[self.index]))
         entry = Entry(title_fr, textvariable=self.evar)
@@ -32,16 +32,16 @@ class Viewer:
         # Set image + image label
         self.tkimage = ImageTk.PhotoImage(self.get_image(filename))
         self.lbl = Label(self.top, image=self.tkimage, height=self.img_y, width=self.img_x)
-        self.lbl.pack(side='top')
+        self.lbl.place(x=15,y=40)
 
         # the button frame
         self.button_fr = Frame(self.top)
-        self.button_fr.pack(side='top', expand=1, fill='x')
+        self.button_fr.place(x=15,y=self.img_y+55)
+        self.button_fr.place(x=1)
         back_button = Button(self.button_fr, text="back", command=lambda: self.next_frame(self.index-1))
         back_button.grid(row=0, column=0, sticky="w", padx=4, pady=4)
         next_button = Button(self.button_fr, text="next", command=lambda: self.next_frame(self.index+1))
         next_button.grid(row=0, column=6, sticky="e", padx=4, pady=4)
-
     # Open an image
     def get_image(self, filename):
         im = Image.open(filename)
