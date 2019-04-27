@@ -1,1 +1,2 @@
-python3 orchestrator/orchestrator.py
+cd ./orchestrator/
+python3 orchestrator.py

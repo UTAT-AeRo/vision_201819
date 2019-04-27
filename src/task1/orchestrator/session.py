@@ -13,6 +13,12 @@ def startupCheck(self, jsondir):
     :return:
     """
 
+    # If the json directory doesn't exist, make it and continue starting orchestrator
+    if not os.path.isdir(jsondir):
+        os.makedirs(jsondir)
+        return
+
+    # If there are no files in the json directory, continue starting the orchestrator
     if not any(isfile(join(jsondir, i)) for i in os.listdir(jsondir)):
         return
 
