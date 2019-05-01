@@ -66,7 +66,7 @@ class MarkerViewer(gui.Viewer):
                     gps.append(latlongalt[:2])
                 # Add entry to json
                 entry['gps'] = gps
-                entry['pixel'] = self.dots[filename]
+                entry['pixels'] = self.dots[filename]
                 entry['file'] = abs_path
                 output_json.append(entry)
             json.dump(output_json, fp)

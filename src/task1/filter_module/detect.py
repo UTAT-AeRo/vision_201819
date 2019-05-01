@@ -12,7 +12,7 @@ IMAGE_FORMATS = ('.bmp', '.jpg', '.png')
 
 # Show image (for debugging)
 def show_img(image):
-    cv2.imshow('img',image)
+    cv2.imshow('img', image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
@@ -94,6 +94,7 @@ output_file = args.output_file
 assert input_dir != output_dir
 assert os.path.exists(input_dir)
 if output_dir is not None and not os.path.exists(output_dir):
+    print(f'creating the output directory {output_dir}')
     os.makedirs(output_dir)
 
 # Get output positive images
