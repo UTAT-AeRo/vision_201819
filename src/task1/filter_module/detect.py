@@ -33,27 +33,20 @@ def process_img(file_name):
     print(file_name)
     image = cv2.imread(file_name)
     # Blur and smooth
-    smoothed_image = cv2.bilateralFilter(image, 20, 50, 200)
+    smoothed_image = cv2.bilateralFilter(image,9,75,75)
     gray = cv2.cvtColor(smoothed_image, cv2.COLOR_BGR2GRAY)
     preprocessed_img = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)[1]
     # Smooth possible blobs
-    preprocessed_img = cv2.dilate(preprocessed_img, None, iterations=4)
-    preprocessed_img = cv2.erode(preprocessed_img, None, iterations=2)
+    preprocessed_img = cv2.dilate(preprocessed_img, None, iterations=2)
+    preprocessed_img = cv2.erode(preprocessed_img, None, iterations=1)
     filtered_img = auto_canny(preprocessed_img)
     # # Draw circle
     # cnts = cv2.findContours(filtered_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
-    return filtered_img
-
-    # if cnts is not None and len(cnts) > 0:
-    #     cnts = contours.sort_contours(cnts)[0]
-    #     for (i, c) in enumerate(cnts):
-    #         ((cX, cY), radius) = cv2.minEnclosingCircle(c)
-    #         cv2.circle(image, (int(cX), int(cY)), int(radius),
-    #                    (0, 0, 255), 2)
-    #     return image
-    # return None
+    if cnts is not None and len(cnts) > 0:
+        return image
+    return None
 
 # Set up the command line argument parsing
 def define_args():
