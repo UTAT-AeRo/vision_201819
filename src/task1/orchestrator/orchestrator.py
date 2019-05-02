@@ -68,11 +68,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if os.path.isfile(flattenedOutputFolder + "/result.json") and not self.sortImagesButton.isEnabled():
             self.sortImagesButton.setEnabled(True)  # Sort Images
-            updateTextCompletedGreen(self.sortImagesLabel)
+            updateTextCompletedGreen(self.FlattenImagesLabel)
 
         if (os.path.isfile(sortOutputPath) or os.path.isfile(idSigChangesOutputPath)) and not self.plotButton.isEnabled():
             self.plotButton.setEnabled(True)  # Plot Button unlock
-            updateTextCompletedGreen(self.FlattenImagesLabel)
+            updateTextCompletedGreen(self.sortImagesLabel)
 
         if not self.exitRequested:
             threading.Timer(0.5, self.mainBGloop).start()
