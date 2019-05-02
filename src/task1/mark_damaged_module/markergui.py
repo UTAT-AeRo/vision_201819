@@ -18,9 +18,8 @@ class MarkerViewer(gui.Viewer):
         next_button.grid(row=0, column=12, sticky="e", padx=4, pady=4)
 
     # Draw the given image in filename
-    def get_image(self, filename):
-        im = Image.open(filename)
-        im = im.resize((self.img_x, self.img_y))
+    def load_image(self, filename):
+        im = gui.Viewer.load_image(self, filename)
         draw = ImageDraw.Draw(im)
         if hasattr(self, 'dots'):
             for coord in self.dots[filename]:
@@ -66,11 +65,14 @@ class MarkerViewer(gui.Viewer):
                     gps.append(latlongalt[:2])
                 # Add entry to json
                 entry['gps'] = gps
-                entry['pixels'] = self.dots[filename]
+                points = self.dots[filename]
+                entry['pixels'] = [(x*self.x_scale, y*self.y_scale) for x, y in points]
                 entry['file'] = abs_path
                 output_json.append(entry)
             json.dump(output_json, fp)
         self.top.destroy()
+
+
 
 # Self explanatory
 def define_args():
