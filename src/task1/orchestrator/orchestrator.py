@@ -107,7 +107,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def launchFlattenModule(self):
         print("dsdssd")
         runModule("Module Flatten Images",
-                  "python3 ../../task2/flattening_module/imageflattener.py --input " + removeDupOutputPath + " --output " + flattenedOutputFolder)
+                  "python3 ../../task2/flattening_module/imageflattener.py --input " + removeDupOutputPath + " --output " + flattenedOutputFolder
+                  + "--dot_size 40")
 
     # Launches the Sort damage module
     def launchSortModule(self):
