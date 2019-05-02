@@ -32,18 +32,22 @@ invalid metadata would you like to remove them?'):
         for path in images_with_bad_metadata:
             os.remove(path)
 
-    if responded_yes("Would you like to set a time restriction?"):
-        while True:
-            try:
-                start = get_time(input("start time: "))
-                end = get_time(input("end time: "))
-                break
-            except ValueError as e:
-                print(e, "Should be of the form 2019-04-13_13-45-55-932(i.e. \
-                2019 April 13th at 1:45 pm 55 seconds and 932 thousandths of a\
-                 second)")
+    while True:
+        if not responded_yes("Would you like to remove a time interval?"):
+            break
 
-        remove_files_outside_of_time_range(input_folder_path, start, end)
+        try:
+            start = get_time(input("start time: ") + "-000")
+            end = get_time(input("end time: ") + "-000")
+
+            if start >= end:
+                print("Start time before end time try again!")
+                break
+
+            remove_files_inside_of_time_range(input_folder_path, start, end)
+        except ValueError as e:
+            print(e, "Should be of the form 2019-04-13_13-45-55(i.e. \
+            2019 April 13th at 1:45 pm 55 seconds)")
 
     images_with_bad_projection = set()
     run_on_each_file(input_dir_path,
@@ -57,7 +61,7 @@ with possible bad projections would you like to remove them?'):
             os.remove(path)
 
 
-def remove_files_outside_of_time_range(input_folder_path: str, start: datetime,
+def remove_files_inside_of_time_range(input_folder_path: str, start: datetime,
                                        end: datetime):
     out_of_range = set()
 
@@ -66,10 +70,7 @@ def remove_files_outside_of_time_range(input_folder_path: str, start: datetime,
         metadata = PROCESSOR.Process(text)
         timestamp = get_time(metadata["corrected"]["gps"]["timestamp"])
         if start < timestamp < end:
-            pass
-        else:
             out_of_range.add(path)
-
     run_on_each_file(input_folder_path, check_time)
 
     if responded_yes(f'Encountered {len(out_of_range)} images with \
