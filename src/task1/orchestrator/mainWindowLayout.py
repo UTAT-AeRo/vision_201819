@@ -119,6 +119,7 @@ def drawTask1(window):
     # Module Sort Images Button
     window.sortImagesButton = QtWidgets.QPushButton("Sort Images", window)
     window.sortImagesButton.move(LEFT_BTN_POS, FIRST_ROW_Y + 250)
+    window.sortImagesButton.clicked.connect(window.launchSortModule)
     setModuleButtonProperties(window.sortImagesButton)
 
     # Module Sort Images Label

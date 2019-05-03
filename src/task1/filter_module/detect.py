@@ -41,8 +41,8 @@ def process_img(file_name):
     preprocessed_img = cv2.erode(preprocessed_img, None, iterations=1)
     filtered_img = auto_canny(preprocessed_img)
     # # Draw circle
-    # cnts = cv2.findContours(filtered_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+    cnts = cv2.findContours(filtered_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
     if cnts is not None and len(cnts) > 0:
         return image

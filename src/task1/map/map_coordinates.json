@@ -1,11 +1,17 @@
 {
-	"topleft": {
+	"points":[
+	{
 		"lat": 48.521839,
-		"long": -71.653898
+		"long": -71.653898,
+		"x": 0,
+		"y": 0
 	},
-	"bottomright": {
+	{
 		"lat": 48.501051,
-		"long": -71.629110
-	},
-	"filename": "samplemap.jpg"
+		"long": -71.629110,
+		"x": 919,
+		"y": 788
+
+	}],
+	"filename": "../map/map_of_area.JPG"
 }
