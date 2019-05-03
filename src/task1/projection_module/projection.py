@@ -58,13 +58,15 @@ class ImageProjection:
         Returns:
             3-tuple of GPS coords in the form (lat, long, alt)
         """
-
+        if altdrone < 0:
+            raise AltitudeError("Altitude should be positive")
         # Find coords of pixel in drone reference frame
         pdrone = self._imgref_to_droneref(pimg)
-
         # Find coords if pixel in earth reference frame
         pearth = self._droneref_to_earthref(pdrone, yawangle, pitchangle,
                                             rollangle)
+        if pearth[2] < -altdrone: #TODO this needs more verification but seems alright
+            raise OrientationError("Point is in the sky")
 
         # take the position of the pixel in the camera and project it to the ground.
         point_ned = self._project_to_ground(pearth, altdrone)
@@ -251,3 +253,9 @@ class ImageProjection:
 
         self.sensor_size = self._calculate_sensor_size(self.sensor_resolution, self.pixel_size)
         self.FOV = self._calculate_fov(self.focal_length, self.sensor_size)
+
+class AltitudeError(ValueError):
+    pass
+
+class OrientationError(ValueError):
+    pass
