@@ -61,7 +61,14 @@ class MarkerViewer(gui.Viewer):
                 gps = []
                 for pimg in self.dots[filename]:
                     # Call projection code
-                    latlongalt = ip.get_pixel_coords(pimg, yawangle, pitchangle, rollangle, latdrone, longdrone, altdrone)
+                    try:
+                        latlongalt = ip.get_pixel_coords(pimg, yawangle,
+                                                         pitchangle,
+                                                         rollangle, latdrone,
+                                                         longdrone, altdrone)
+                    except projection.AltitudeError:
+                        print('Altitude Error')
+                        continue
                     gps.append(latlongalt[:2])
                 # Add entry to json
                 entry['gps'] = gps

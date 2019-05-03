@@ -1,4 +1,4 @@
-from tkinter import Label, Frame, Button, Entry, Tk, StringVar
+from tkinter import Label, Frame, Button, Entry, Tk, StringVar, OptionMenu
 import os
 from PIL import Image, ImageDraw
 import sys
@@ -6,6 +6,7 @@ sys.path.append("..")
 from common import gui, imagemetadata
 from shapely.geometry import Polygon
 import json
+import math
 import argparse
 
 class DegreeDamageViewer(gui.Viewer):
@@ -23,9 +24,12 @@ class DegreeDamageViewer(gui.Viewer):
         super(DegreeDamageViewer, self).__init__(window, file_names, img_x, img_y)
         self.gps_coords = {x["file"]:x["dims"] for x in file_list}
         self.lbl.bind('<Button-1>', self.on_click)
+        self.location_dmgs = []
         self.dots = {file_name: [] for file_name in self.files}
         self.shapes = {file_name: [] for file_name in self.files}
         self.messages = {file_name: '' for file_name in self.files}
+        self.location_dmgs = {file_name: '' for file_name in self.files}
+        self.pattern_dmgs = {file_name: '' for file_name in self.files}
         self.output_file = output_file
         next_button = Button(self.button_fr, text="done", command=self.handle_done)
         next_button.grid(row=0, column=12, sticky="e", padx=4, pady=4)
@@ -36,13 +40,38 @@ class DegreeDamageViewer(gui.Viewer):
         delete_button.grid(row=0, column=16, padx=4, pady=4)
 
         self.message = StringVar()
+        self.message.trace('w', self.record)
         entry = Entry(self.button_fr, textvariable=self.message)
         entry.grid(row=3, column=0, pady=4)
         entry.bind('<Return>', self.record)
 
-    def record(self, x):
+        self.pattern_dmg_choices = ['Whole Panel', 'String', 'Small Spot(s)',
+                               'Large Spot(s)', 'Patchwork']
+        self.pattern_dmg = StringVar()
+        self.pattern_dmg.trace('w', self.record_pattern_dmg)
+        pattern_dmg_menu = OptionMenu(self.button_fr, self.pattern_dmg,
+                                      *self.pattern_dmg_choices)
+        pattern_dmg_menu.grid(row=5, column=0, pady=4)
+
+        self.location_dmg_choices = ['Middle', 'Long Edge', 'Top Edge', 'Bottom Edge',
+                                'Throughout']
+        self.location_dmg = StringVar()
+        self.location_dmg.trace('w', self.record_location_dmg)
+        location_dmg_menu = OptionMenu(self.button_fr, self.location_dmg,
+                                       *self.location_dmg_choices)
+        location_dmg_menu.grid(row=7, column=0, pady=4)
+
+    def record(self, stringvar, mode, z):
         filename = self.files[self.index]
         self.messages[filename] = self.message.get()
+
+    def record_pattern_dmg(self, stringvar, mode, z):
+        filename = self.files[self.index]
+        self.pattern_dmgs[filename] = self.pattern_dmg.get()
+
+    def record_location_dmg(self, stringvar, mode, z):
+        filename = self.files[self.index]
+        self.location_dmgs[filename] = self.location_dmg.get()
 
     def get_image(self, filename):
         '''
@@ -70,12 +99,17 @@ class DegreeDamageViewer(gui.Viewer):
         new_im = self.get_image(filename)
         self.tkimage.paste(new_im)
 
-    def determine_level(self, xy_list):
+    def determine_level(self, xy_list, location, pattern):
         total_area = 0
         for xy in xy_list:
             total_area += Polygon(xy).area
         area_perc = total_area/(self.img_x*self.img_y)
-        return area_perc
+        dod = min(5, math.ceil(area_perc/0.02))
+        location_of_dmg = self.location_dmg_choices.index(location)+1
+        dmg_pattern = self.pattern_dmg_choices.index(pattern)+1
+        print(dod, location_of_dmg, dmg_pattern)
+        weighted_avg = 0.5*dmg_pattern + 0.3*location_of_dmg + 0.2*dod
+        return weighted_avg
 
     def handle_add_shape(self):
         filename = self.files[self.index]
@@ -126,7 +160,9 @@ class DegreeDamageViewer(gui.Viewer):
                     'lat': self.gps_coords[filename][0],
                     'long': self.gps_coords[filename][1],
                     'message': '{}: {}'.format(
-                        self.determine_level(self.shapes[filename]),
+                        self.determine_level(self.shapes[filename],
+                                             self.location_dmgs[filename],
+                                             self.pattern_dmgs[filename]),
                         self.messages[filename]),
                     'filename': filename
                 })

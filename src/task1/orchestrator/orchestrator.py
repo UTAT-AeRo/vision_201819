@@ -105,20 +105,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Launches the flattening module and pipes the output into the current terminal
     def launchFlattenModule(self):
-        print("dsdssd")
         runModule("Module Flatten Images",
                   "python3 ../../task2/flattening_module/imageflattener.py --input " + removeDupOutputPath + " --output " + flattenedOutputFolder)
 
     # Launches the Sort damage module
     def launchSortModule(self):
-        runModule("Module Sort Images",
+        runModule("Module Degree Damage Images",
                   "python3 ../degree_damage_module/degree_dmg_gui.py -i " + flattenedOutputFolder + "/result.json" + " -f " + sortOutputPath)
 
 
     # Launches the point plotting module
     def launchPlottingModule(self):
         runModule("Module Plot points on map",
-                  "python3 ../plot_pois/plot_pois.py -im ../map/map_coordinates.json -id " + sortOutputPath + " -pi ../plot_pois/pinpoint.png -ps 1")
+                  "python3 ../plot_pois/plot_pois.py -im ../map/map_coordinates.json -id " + sortOutputPath + " -pi ../plot_pois/pinpoint.png -ps 0.1")
 
 
 

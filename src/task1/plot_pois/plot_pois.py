@@ -114,8 +114,6 @@ for coords in id_json['damaged']:
 
 	for chan in range(0,3):
 		# we replace channels on the destination image..
-		print(pin_image_alpha.shape, pin_image.shape)
-		print(im_image_alpha.shape, pyd, pyd2, pxd, pxd2)
 		im_img[pyd:pyd2,pxd:pxd2,chan] = (pin_image_alpha
 										  *pin_image[:, :, chan]
 										  +im_image_alpha
