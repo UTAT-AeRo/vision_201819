@@ -68,3 +68,7 @@ class Viewer:
         name = self.evar.get()
         if name in self.files_reverse:
             self.next_frame(self.files_reverse[name])
+
+    @property
+    def file(self):
+        return self.files[self.index]
