@@ -23,11 +23,11 @@ class Viewer:
             self.top.quit()
 
         # Set top searchbar
-        title_fr = Frame(self.top)
-        title_fr.place(x=15,y=15)
+        self.title_fr = Frame(self.top)
+        self.title_fr.place(x=15,y=15)
         self.evar = StringVar()
         self.evar.set(os.path.basename(self.files[self.index]))
-        entry = Entry(title_fr, textvariable=self.evar)
+        entry = Entry(self.title_fr, textvariable=self.evar)
         entry.grid(row=0, column=1, sticky="e", pady=4)
         entry.bind('<Return>', self.next_frame_by_name)
 
@@ -68,3 +68,7 @@ class Viewer:
         name = self.evar.get()
         if name in self.files_reverse:
             self.next_frame(self.files_reverse[name])
+
+    @property
+    def file(self):
+        return self.files[self.index]
