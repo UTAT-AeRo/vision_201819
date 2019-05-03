@@ -107,8 +107,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def launchFlattenModule(self):
         print("dsdssd")
         runModule("Module Flatten Images",
-                  "python3 ../../task2/flattening_module/imageflattener.py --input " + removeDupOutputPath + " --output " + flattenedOutputFolder
-                  + "--dot_size 40")
+                  "python3 ../../task2/flattening_module/imageflattener.py --input " + removeDupOutputPath + " --output " + flattenedOutputFolder)
 
     # Launches the Sort damage module
     def launchSortModule(self):
@@ -119,7 +118,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # Launches the point plotting module
     def launchPlottingModule(self):
         runModule("Module Plot points on map",
-                  "python3 ../plot_pois/plot_pois.py -im ../map/map_coordinates.json -id " + irLocateOutputPath + " -pi ../plot_pois/pinpoint.png -ps 1")
+                  "python3 ../plot_pois/plot_pois.py -im ../map/map_coordinates.json -id " + sortOutputPath + " -pi ../plot_pois/pinpoint.png -ps 1")
 
 
 
