@@ -101,7 +101,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # Launches the remove duplicate module
     def launchRemoveDupModule(self):
         runModule("Module Remove Duplicates",
-                  "python3 ../remove_duplicated_image/remove_duplicated.py " + irLocateOutputPath + " " + removeDupOutputPath + " 5120 5120 1")
+                  "python3 ../remove_duplicated_image/remove_duplicated.py " + irLocateOutputPath + " " + removeDupOutputPath + " 5120 5120 0.00001")
 
     # Launches the flattening module and pipes the output into the current terminal
     def launchFlattenModule(self):

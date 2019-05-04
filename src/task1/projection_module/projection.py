@@ -236,7 +236,7 @@ class ImageProjection:
         # Divide by 1000 to convert from micrometers to mm
         return sensor_resolution * (pixel_size / 1000)
 
-    def __init__(self, focal_length=50, sensor_resolution=5120, pixel_size=4.5):
+    def __init__(self, focal_length=35, sensor_resolution=5120, pixel_size=4.5):
         """initializes all relevant variables by calculating using the given variables
 
         Args:
