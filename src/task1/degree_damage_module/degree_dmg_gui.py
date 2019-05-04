@@ -109,7 +109,7 @@ class DegreeDamageViewer(gui.Viewer):
         dmg_pattern = self.pattern_dmg_choices.index(pattern)+1
         print(dod, location_of_dmg, dmg_pattern)
         weighted_avg = 0.5*dmg_pattern + 0.3*location_of_dmg + 0.2*dod
-        return weighted_avg
+        return area_perc, weighted_avg
 
     def handle_add_shape(self):
         filename = self.files[self.index]
@@ -155,13 +155,15 @@ class DegreeDamageViewer(gui.Viewer):
         output_json = []
         with open(self.output_file, 'w') as fp:
             for filename in self.shapes:
+                area, level = self.determine_level(self.shapes[filename],
+                                             self.location_dmgs[filename],
+                                             self.pattern_dmgs[filename])
                 output_json.append({
                     'lat': self.gps_coords[filename][0],
                     'long': self.gps_coords[filename][1],
-                    'message': '{}: {}'.format(
-                        self.determine_level(self.shapes[filename],
-                                             self.location_dmgs[filename],
-                                             self.pattern_dmgs[filename]),
+                    'message': 'p: {}, l: {}, {}'.format(
+                        area,
+                        level,
                         self.messages[filename]),
                     'filename': filename
                 })
