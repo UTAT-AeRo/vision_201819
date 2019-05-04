@@ -16,7 +16,7 @@ h=int(sys.argv[3])
 w=int(sys.argv[4])
 threshold=float(sys.argv[5])
 
-
+print(threshold)
 
 #extracting json info
 with open(input_json_file) as file:
@@ -27,7 +27,8 @@ panels=set()
 i=0
 for files in input_data:
    for gps_num in range(0,len(files["gps"]),1):
-      panels.add(((files["gps"][gps_num][0], files["gps"][gps_num][1]), (files["pixels"][gps_num][0], files["pixels"][gps_num][1]), files["file"]))
+      panels.add(((files["gps"][gps_num][0], files["gps"][gps_num][1]),
+                  (files["pixels"][gps_num][0], files["pixels"][gps_num][1]), files["file"]))
 
 
 
