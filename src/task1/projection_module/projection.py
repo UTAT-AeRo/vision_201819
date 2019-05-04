@@ -58,6 +58,7 @@ class ImageProjection:
         Returns:
             3-tuple of GPS coords in the form (lat, long, alt)
         """
+        altdrone += 10
         if altdrone < 0:
             raise AltitudeError("Altitude should be positive")
         # Find coords of pixel in drone reference frame

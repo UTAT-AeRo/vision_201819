@@ -136,7 +136,6 @@ class DegreeDamageViewer(gui.Viewer):
         if len(new_arr) == len(self.dots[filename]):
             new_arr.append([x, y])
         self.dots[filename] = new_arr
-
         new_im = self.get_image(filename)
         self.tkimage.paste(new_im)
 
