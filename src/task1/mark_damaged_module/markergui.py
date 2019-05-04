@@ -60,8 +60,16 @@ class MarkerViewer(gui.Viewer):
                 longdrone = float(i['gps']['longitude'])
                 gps = []
                 for pimg in self.dots[filename]:
+                    pimg = (pimg[0]*self.x_scale, pimg[1]*self.y_scale)
                     # Call projection code
-                    latlongalt = ip.get_pixel_coords(pimg, yawangle, pitchangle, rollangle, latdrone, longdrone, altdrone)
+                    try:
+                        latlongalt = ip.get_pixel_coords(pimg, yawangle,
+                                                         pitchangle,
+                                                         rollangle, latdrone,
+                                                         longdrone, altdrone)
+                    except projection.AltitudeError:
+                        print('Altitude Error')
+                        continue
                     gps.append(latlongalt[:2])
                 # Add entry to json
                 entry['gps'] = gps
@@ -73,13 +81,13 @@ class MarkerViewer(gui.Viewer):
         self.top.destroy()
 
 
-
 # Self explanatory
 def define_args():
     parser = argparse.ArgumentParser(description='Detect broken solar panels')
     parser.add_argument('-i', '--input_file', help='specify input json file path', required=True)
     parser.add_argument('-f', '--output_file', help='specify output json file path', required=True)
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     args = define_args()

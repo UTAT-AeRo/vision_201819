@@ -67,7 +67,7 @@ photo_label.pack()
 def end_program(final_data):
 	with open(json_out_name, 'w') as outfile:
 		json.dump({"positive": final_data}, outfile)
-	exit() 
+	exit()
 
 # Function called when "right swipped" (with the right arrow key)
 def good_image(e):
@@ -82,13 +82,10 @@ def good_image(e):
 		end_program(good_images)
 
 	print("good")
-	img2 = ImageTk.PhotoImage(Image.open(img_names[counter]))
-
-	scaleDims = getScaledDims(img2.width(), img2.height())
-	img2 = ImageTk.PhotoImage( (Image.open(img_names[counter]).resize((scaleDims[0], scaleDims[1]))) )
-
-	photo_label.configure(image=img2)
-	photo_label.image = img2
+	img2 = Image.open(img_names[counter])
+	scaled_dims = getScaledDims(img2.width, img2.height)
+	img2 = img2.resize(tuple(scaled_dims))
+	img.paste(img2)
 
 # Function called when we "left-swipe" (left arrow key)
 def bad_image(e):
@@ -103,13 +100,10 @@ def bad_image(e):
 	if(counter == len(img_names)):
 		end_program(good_images)
 	print("bad")
-	img2 = ImageTk.PhotoImage(Image.open(img_names[counter]))
-
-	scaleDims = getScaledDims(img2.width(), img2.height())
-	img2 = ImageTk.PhotoImage( (Image.open(img_names[counter]).resize((scaleDims[0], scaleDims[1]))) )
-
-	photo_label.configure(image=img2)
-	photo_label.image = img2
+	img2 = Image.open(img_names[counter])
+	scaled_dims = getScaledDims(img2.width, img2.height)
+	img2 = img2.resize(tuple(scaled_dims))
+	img.paste(img2)
 
 # When up arrow key is pressed, we reverse the last action (undo)
 def undo(e):
@@ -125,13 +119,10 @@ def undo(e):
 
 	counter -= 1
 	print("undo")
-	img2 = ImageTk.PhotoImage(Image.open(img_names[counter]))
-
-	scaleDims = getScaledDims(img2.width(), img2.height())
-	img2 = ImageTk.PhotoImage( (Image.open(img_names[counter]).resize((scaleDims[0], scaleDims[1]))) )
-
-	photo_label.configure(image=img2)
-	photo_label.image = img2
+	img2 = Image.open(img_names[counter])
+	scaled_dims = getScaledDims(img2.width, img2.height)
+	img2 = img2.resize(tuple(scaled_dims))
+	img.paste(img2)
 
 
 # Binding keys to commands

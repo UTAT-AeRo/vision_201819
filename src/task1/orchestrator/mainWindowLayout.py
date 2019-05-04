@@ -64,6 +64,7 @@ def drawTask1(window):
 
     # ID Changes Button
     window.idSigChangesButton = QtWidgets.QPushButton("ID Signif Changes", window)
+    window.idSigChangesButton.clicked.connect(window.lauchSigChange)
     window.idSigChangesButton.move(325, FIRST_ROW_Y + 50)
     setModuleButtonProperties(window.idSigChangesButton)
 

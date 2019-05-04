@@ -1,3 +1,4 @@
+import json
 import sys
 import threading
 from PyQt5 import QtWidgets
@@ -14,6 +15,7 @@ irLocateOutputPath = jsondir + "irlocate.json"
 idSigChangesOutputPath = jsondir + "significantchanges.json"
 removeDupOutputPath = jsondir + "removeduplicates.json"
 sortOutputPath = jsondir + "sortimages.json"
+allPoisOutPutPath = jsondir + "pois.json"
 
 # Main Window
 class MainWindow(QtWidgets.QMainWindow):
@@ -50,27 +52,34 @@ class MainWindow(QtWidgets.QMainWindow):
     # The main loop that is in charge of periodically checking the status of the json files and updating the interface accordingly
     # I know its not safe to change these buttons from a thread but I don't want to dive into signals right now
     def mainBGloop(self):
-        if os.path.isfile(autoFilterOutputPath) and not self.manualfilterButton.isEnabled():
-            self.manualfilterButton.setEnabled(True)  # Manual Filter Button unlock
+        if os.path.isfile(
+                autoFilterOutputPath) and not self.manualfilterButton.isEnabled():
+            self.manualfilterButton.setEnabled(
+                True)  # Manual Filter Button unlock
             updateTextCompletedGreen(self.autofilterLabel)
 
-        if os.path.isfile(manualFilterOutputPath) and not self.locateIRButton.isEnabled():
+        if os.path.isfile(
+                manualFilterOutputPath) and not self.locateIRButton.isEnabled():
             self.locateIRButton.setEnabled(True)  # Locate IR Button unlock
             updateTextCompletedGreen(self.manualFilterLabel)
 
-        if os.path.isfile(irLocateOutputPath) and not self.removeDupButton.isEnabled():
+        if os.path.isfile(
+                irLocateOutputPath) and not self.removeDupButton.isEnabled():
             self.removeDupButton.setEnabled(True)  # Remove duplicate
             updateTextCompletedGreen(self.locateIRLabel)
 
-        if os.path.isfile(removeDupOutputPath) and not self.flattenImagesButton.isEnabled():
+        if os.path.isfile(
+                removeDupOutputPath) and not self.flattenImagesButton.isEnabled():
             self.flattenImagesButton.setEnabled(True)  # Flatten Image
             updateTextCompletedGreen(self.removeDupLabel)
 
-        if os.path.isfile(flattenedOutputFolder + "/result.json") and not self.sortImagesButton.isEnabled():
+        if os.path.isfile(
+                flattenedOutputFolder + "/result.json") and not self.sortImagesButton.isEnabled():
             self.sortImagesButton.setEnabled(True)  # Sort Images
             updateTextCompletedGreen(self.FlattenImagesLabel)
 
-        if (os.path.isfile(sortOutputPath) or os.path.isfile(idSigChangesOutputPath)) and not self.plotButton.isEnabled():
+        if (os.path.isfile(sortOutputPath) or os.path.isfile(
+                idSigChangesOutputPath)) and not self.plotButton.isEnabled():
             self.plotButton.setEnabled(True)  # Plot Button unlock
             updateTextCompletedGreen(self.sortImagesLabel)
 
@@ -105,34 +114,53 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Launches the flattening module and pipes the output into the current terminal
     def launchFlattenModule(self):
-        print("dsdssd")
         runModule("Module Flatten Images",
                   "python3 ../../task2/flattening_module/imageflattener.py --input " + removeDupOutputPath + " --output " + flattenedOutputFolder)
 
     # Launches the Sort damage module
     def launchSortModule(self):
-        runModule("Module Sort Images",
+        runModule("Module Degree Damage Images",
                   "python3 ../degree_damage_module/degree_dmg_gui.py -i " + flattenedOutputFolder + "/result.json" + " -f " + sortOutputPath)
-
 
     # Launches the point plotting module
     def launchPlottingModule(self):
-        runModule("Module Plot points on map",
-                  "python3 ../plot_pois/plot_pois.py -im ../map/map_coordinates.json -id " + sortOutputPath + " -pi ../plot_pois/pinpoint.png -ps 1")
+        if os.path.exists(sortOutputPath) and os.path.exists(idSigChangesOutputPath):
+            with open(sortOutputPath, 'r') as fp:
+                sorted = json.load(fp)
 
+            with open(idSigChangesOutputPath, 'r') as fp:
+                sigChanges=json.load(fp)
+
+            all_pois = {"damaged": sorted["damaged"] + sigChanges["damaged"]}
+
+            with open(allPoisOutPutPath, 'w') as fp:
+                json.dump(all_pois, fp)
+            runModule("Module Plot points on map",
+                      "python3 ../plot_pois/plot_pois.py -im ../map/map_coordinates.json -id " + allPoisOutPutPath + " -pi ../plot_pois/pinpoint.png -ps 0.1")
+        elif os.path.exists(sortOutputPath):
+            runModule("Module Plot points on map",
+                      "python3 ../plot_pois/plot_pois.py -im ../map/map_coordinates.json -id " + sortOutputPath + " -pi ../plot_pois/pinpoint.png -ps 0.1")
+
+
+    def lauchSigChange(self):
+        runModule("Finding significant changes",
+                  "python3 ../sig_changes_module/find_sig_changes_gui.py -d " + self.dir + " -f " + idSigChangesOutputPath)
 
 
 # Runs a module and pipes the output to the current terminal
 def runModule(title, cmd):
+    print(cmd)
     runningDialog()
     print("\n\n\n\n\n\n=== " + title + " ===")
     os.system(cmd)
     print("=== Output End ===\n\n\n\n\n\n")
 
+
 # Given a QWidgetLabel, this function will update it to Completed and change the colour to green
 def updateTextCompletedGreen(label):
     label.setText("Completed")
     label.setStyleSheet('color: green')
+
 
 # Pops up a new QMessageBox notifying the user of the running module
 def runningDialog():
@@ -140,11 +168,13 @@ def runningDialog():
     msg.setIcon(QtWidgets.QMessageBox.Information)
 
     msg.setText("The module is about to run")
-    msg.setInformativeText("Please check the terminal for module output. The GUI will not respond until the module is "
-                           "complete. Press OK to start.")
+    msg.setInformativeText(
+        "Please check the terminal for module output. The GUI will not respond until the module is "
+        "complete. Press OK to start.")
     msg.setWindowTitle("About to start")
     msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
     msg.exec_()
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
